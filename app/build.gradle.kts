@@ -1,6 +1,7 @@
 plugins {
-    alias(libs.plugins.android.application)
+    id("com.android.application")
 }
+
 
 android {
     namespace = "com.devst.mimaseterointeligente"
@@ -45,7 +46,7 @@ dependencies {
 
 
     // Google Sign-In
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
 
     // Retrofit para API REST
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
