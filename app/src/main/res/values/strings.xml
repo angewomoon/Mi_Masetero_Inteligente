@@ -1,3 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Mi Masetero Inteligente</string>
+    <string name="app_tagline">Monitoreo inteligente, plantas saludables.</string>
+
+    <!-- Login Screen -->
+    <string name="welcome">Bienvenido</string>
+    <string name="email">Email</string>
+    <string name="email_hint">Correo</string>
+    <string name="password">Contraseña</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="continue_with_google">Continuar con Google</string>
+    <string name="forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="no_account">¿No tienes cuenta?</string>
+
+    <!-- Register Screen -->
+    <string name="create_account">Crea tu cuenta</string>
+    <string name="name">Nombre</string>
+    <string name="verify_password">Verifica Tu Contraseña</string>
+    <string name="enter_password">Ingresa Tu Contraseña</string>
+    <string name="create_account_button">Crear Cuenta</string>
+
+    <!-- Forgot Password -->
+    <string name="forgot_password_title">¿Olvidaste Tu Contraseña?</string>
+    <string name="enter_email">Digita tu correo</string>
+    <string name="send">Enviar</string>
+
+    <!-- Verify Code -->
+    <string name="reset_password">Reestablece Tu Contraseña</string>
+    <string name="code_sent_message">Hemos enviado un código a tu correo electrónico el cual debes ingresar aquí 👇</string>
+    <string name="verify">Verificar</string>
+
+    <!-- Reset Password -->
+    <string name="enter_new_password">Ingresa Tu Nueva Contraseña</string>
+    <string name="new_password">Nueva Contraseña</string>
+    <string name="enter">Ingresar</string>
+
+    <!-- Success -->
+    <string name="password_updated">Contraseña Actualizada con Éxito 🤩</string>
+
+    <!-- Home -->
+    <string name="home">Home</string>
+    <string name="weather_api">API de Clima</string>
+    <string name="temperature">Temperatura</string>
+    <string name="add_new_plant">Añadir Nueva Planta</string>
+
+    <!-- Add Plant -->
+    <string name="add_plant_title">Añadir nueva Planta</string>
+    <string name="plant_name">Nombre de la planta</string>
+    <string name="select_type">Seleccionar tipo</string>
+    <string name="select_species">Seleccionar especie</string>
+    <string name="add_plant_button">Añadir Planta</string>
+    <string name="type_example">ej: Cactacea</string>
+    <string name="species_example">ej: Rosa de Alabastro</string>
+
+    <!-- Plant Dashboard -->
+    <string name="my_planter">Mi Masetero</string>
+    <string name="plant_status">Estado de la planta</string>
+    <string name="soil_humidity">Humedad Suelo</string>
+    <string name="light_level">Nivel de Luz</string>
+    <string name="water_level">Nivel de Agua</string>
+    <string name="ambient_humidity">Humedad ambiente</string>
+    <string name="possible_pests">Posibles plaga</string>
+    <string name="scientific_name">Nombre Científico</string>
+
+    <!-- Edit Plant -->
+    <string name="edit_plant">Editar Planta</string>
+    <string name="change_name">Cambiar Nombre</string>
+    <string name="change_type">Cambiar tipo</string>
+    <string name="change_species">Cambiar especie</string>
+    <string name="update_plant">Actualizar Planta</string>
+    <string name="delete_plant">Eliminar Planta</string>
+
+    <!-- Alerts -->
+    <string name="alerts">Alertas</string>
+    <string name="alerts_center">Centro de alertas</string>
+    <string name="low_humidity">Humedad Baja</string>
+    <string name="low_humidity_desc">La humedad de tu planta está por debajo del nivel óptimo. Considera regar.</string>
+    <string name="low_light">Poca luz</string>
+    <string name="low_light_desc">Tu planta necesita más luz solar. Muévala a un lugar más iluminado.</string>
+    <string name="pest_detected">¡Plaga Detectada!</string>
+    <string name="pest_detected_desc">Se ha detectado una posible plaga. Revisa tu planta!</string>
+    <string name="low_water">Nivel de Agua baja</string>
+    <string name="low_water_desc">el nivel de agua actualmente es baja. Considere rellenar.</string>
+
+    <!-- Profile -->
+    <string name="profile">Perfil</string>
+    <string name="user">Usuario</string>
+    <string name="plants">Plantas</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="edit_profile">Editar perfil</string>
+
+    <!-- Edit Profile -->
+    <string name="change_email">Cambiar Correo</string>
+    <string name="change_password">Cambiar Contraseña</string>
+    <string name="make_changes">Realizar Cambios</string>
+    <string name="delete_user">Eliminar Usuario</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_add">Añadir</string>
+    <string name="nav_alerts">Alertas</string>
+    <string name="nav_profile">Perfil</string>
+
+    <!-- Time -->
+    <string name="minutes_ago">Hace %d m</string>
+    <string name="hours_ago">Hace %d h</string>
+
+    <!-- Messages -->
+    <string name="loading">Cargando...</string>
+    <string name="error_connection">Error de conexión</string>
+    <string name="success">Éxito</string>
+    <string name="error">Error</string>
+    <string name="try_again">Intentar de nuevo</string>
 </resources>

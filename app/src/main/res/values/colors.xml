@@ -1,5 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Colores principales basados en el mockup -->
+    <color name="primary_green">#2ECC40</color>
+    <color name="primary_green_dark">#27AE34</color>
+    <color name="secondary_green">#B8E6B8</color>
+    <color name="light_green">#C8F7C8</color>
+    <color name="background_cream">#FFF8E7</color>
+    <color name="button_green">#A4D65E</color>
+
+    <!-- Colores de estado -->
+    <color name="alert_red">#FF4444</color>
+    <color name="alert_yellow">#FFBB33</color>
+    <color name="alert_green">#00C851</color>
+
+    <!-- Colores de texto -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_hint">#BDBDBD</color>
+    <color name="text_white">#FFFFFF</color>
+
+    <!-- Colores adicionales -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="gray_light">#F5F5F5</color>
+    <color name="gray_medium">#E0E0E0</color>
+    <color name="transparent">#00000000</color>
+
+    <!-- Colores para indicadores de sensores -->
+    <color name="sensor_water">#2196F3</color>
+    <color name="sensor_sun">#FFC107</color>
+    <color name="sensor_temp">#FF5722</color>
+    <color name="sensor_humidity">#03A9F4</color>
+    <color name="sensor_pest">#9C27B0</color>
 </resources>
