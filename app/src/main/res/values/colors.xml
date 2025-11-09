@@ -33,4 +33,17 @@
     <color name="sensor_temp">#FF5722</color>
     <color name="sensor_humidity">#03A9F4</color>
     <color name="sensor_pest">#9C27B0</color>
+
+    <color name="mi_primary_blue">#0A84FF</color>
+    <color name="mi_primary_green">#00C853</color>
+    <color name="mi_background">#F5F7FB</color>
+    <color name="mi_on_primary">#FFFFFF</color>
+    <color name="mi_text_dark">#0F172A</color>
+    <color name="mi_text_muted">#64748B</color>
+    <color name="mi_stroke">#E2E8F0</color>
+    <color name="mi_background_light">#F7F6E7</color>
+     <!-- fondo -->
+    <color name="mi_primary_green_light">#A4E965</color>     <!-- botón -->
+    <color name="mi_input_fill">#F7F6E7</color><!-- crema de inputs -->
+
 </resources>
