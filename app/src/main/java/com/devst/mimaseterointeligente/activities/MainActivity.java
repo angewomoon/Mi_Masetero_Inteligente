@@ -17,6 +17,9 @@ import com.devst.mimaseterointeligente.R;
 import com.devst.mimaseterointeligente.fragments.AlertsFragment;
 import com.devst.mimaseterointeligente.fragments.HomeFragment;
 import com.devst.mimaseterointeligente.fragments.ProfileFragment;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,31 +29,30 @@ public class MainActivity extends AppCompatActivity {
     private AlertsFragment alertsFragment;
     private ProfileFragment profileFragment;
     private SharedPreferences sharedPreferences;
+    private GoogleSignInClient mGoogleSignInClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Inicializar SharedPreferences
         sharedPreferences = getSharedPreferences("MaseteroPrefs", MODE_PRIVATE);
 
-        // Verificar si el usuario está logueado
         if (!isUserLoggedIn()) {
             navigateToLogin();
             return;
         }
 
-        // Inicializar vistas
         initViews();
-
-        // Inicializar fragmentos
         initFragments();
 
-        // Configurar bottom navigation
-        setupBottomNavigation();
+        // Configurar Google Sign-In Client para poder cerrar la sesión
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
-        // Cargar fragmento inicial
+        setupBottomNavigation();
         loadFragment(homeFragment, "HOME");
     }
 
@@ -66,57 +68,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupBottomNavigation() {
-        bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int itemId = item.getItemId();
-
-                if (itemId == R.id.navigation_home) {
-                    loadFragment(homeFragment, "HOME");
-                    return true;
-                } else if (itemId == R.id.navigation_add) {
-                    // Abrir actividad para añadir planta
-                    openAddPlantActivity();
-                    return false;
-                } else if (itemId == R.id.navigation_alerts) {
-                    loadFragment(alertsFragment, "ALERTS");
-                    return true;
-                } else if (itemId == R.id.navigation_profile) {
-                    loadFragment(profileFragment, "PROFILE");
-                    return true;
-                }
-
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.navigation_home) {
+                loadFragment(homeFragment, "HOME");
+                return true;
+            } else if (itemId == R.id.navigation_add) {
+                openAddPlantActivity();
                 return false;
+            } else if (itemId == R.id.navigation_alerts) {
+                loadFragment(alertsFragment, "ALERTS");
+                return true;
+            } else if (itemId == R.id.navigation_profile) {
+                loadFragment(profileFragment, "PROFILE");
+                return true;
             }
+            return false;
         });
 
-        // Configurar el reseleccionar
-        bottomNavigationView.setOnItemReselectedListener(new NavigationBarView.OnItemReselectedListener() {
-            @Override
-            public void onNavigationItemReselected(@NonNull MenuItem item) {
-                // No hacer nada cuando se reselecciona
-            }
+        bottomNavigationView.setOnItemReselectedListener(item -> {
+            // No hacer nada cuando se reselecciona
         });
     }
 
     private void loadFragment(Fragment fragment, String tag) {
-        // Verificar si el fragmento ya existe
-        Fragment existingFragment = fragmentManager.findFragmentByTag(tag);
-
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-
-        // Ocultar todos los fragmentos
         for (Fragment frag : fragmentManager.getFragments()) {
             if (frag != null) {
                 transaction.hide(frag);
             }
         }
 
+        Fragment existingFragment = fragmentManager.findFragmentByTag(tag);
         if (existingFragment != null) {
-            // Si el fragmento ya existe, mostrarlo
             transaction.show(existingFragment);
         } else {
-            // Si no existe, añadirlo
             transaction.add(R.id.fragmentContainer, fragment, tag);
         }
 
@@ -139,20 +125,27 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
+    /**
+     * Método público y centralizado para el cierre de sesión.
+     * Cierra la sesión de Google, y al completarse, limpia los datos locales y navega a Login.
+     */
     public void logout() {
-        // Limpiar sesión
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.clear();
-        editor.apply();
+        // Primero, cerrar la sesión de Google. El listener se ejecutará cuando termine.
+        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            // Ahora que Google ha cerrado sesión, limpiamos nuestros datos locales.
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.clear(); // Limpia todos los datos de SharedPreferences.
+            editor.putBoolean("isLoggedIn", false); // Por seguridad, lo ponemos explícitamente a false.
+            editor.commit(); // Usar commit para asegurar el guardado inmediato.
 
-        // Navegar a login
-        navigateToLogin();
+            // Por último, navegar a la pantalla de Login.
+            navigateToLogin();
+        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Actualizar el fragmento actual cuando se regresa a la actividad
         if (homeFragment != null && homeFragment.isVisible()) {
             homeFragment.refreshData();
         }

@@ -69,7 +69,7 @@
         <!-- Actividades principales -->
         <activity
             android:name=".activities.MainActivity"
-            android:theme="@style/Theme.MaseteroInteligente" />
+            android:theme="@style/Theme.MaseteroInteligente.NoActionBar" />
 
         <activity
             android:name=".activities.AddPlantActivity"
@@ -77,7 +77,7 @@
 
         <activity
             android:name=".activities.PlantDashboardActivity"
-            android:theme="@style/Theme.MaseteroInteligente" />
+            android:theme="@style/Theme.MaseteroInteligente.NoActionBar" />
 
         <activity
             android:name=".activities.EditPlantActivity"
@@ -93,7 +93,7 @@
 
         <activity
             android:name=".activities.EditProfileActivity"
-            android:theme="@style/Theme.MaseteroInteligente" />
+            android:theme="@style/Theme.MaseteroInteligente.NoActionBar" /> <!-- CORREGIDO -->
 
         <!-- Configuración de Google Sign-In -->
         <meta-data

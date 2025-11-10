@@ -287,6 +287,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return plants;
     }
 
+    /**
+     * Contar el número de plantas de un usuario.
+     * @param userId ID del usuario.
+     * @return El número total de plantas del usuario.
+     */
+    public int getPlantsCountByUserId(int userId) {
+        String countQuery = "SELECT COUNT(*) FROM " + TABLE_PLANTS + " WHERE " + KEY_USER_ID + " = " + userId;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(countQuery, null);
+        int count = 0;
+        if(cursor.moveToFirst()){
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        db.close();
+        return count;
+    }
+
     // Obtener planta por ID
     public Plant getPlantById(int plantId) {
         SQLiteDatabase db = this.getReadableDatabase();

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme -->
-    <style name="Theme.MaseteroInteligente" parent="Theme.MaterialComponents.Light.DarkActionBar">
+    <!-- Base application theme. This theme is the new foundation, WITHOUT a default ActionBar. -->
+    <style name="Theme.MaseteroInteligente" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Primary brand color -->
         <item name="colorPrimary">@color/primary_green</item>
         <item name="colorPrimaryVariant">@color/primary_green_dark</item>
@@ -22,11 +22,8 @@
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
-    <!-- Theme without ActionBar -->
-    <style name="Theme.MaseteroInteligente.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
+    <!-- This now simply inherits from the main theme, which is already NoActionBar. It's kept for compatibility. -->
+    <style name="Theme.MaseteroInteligente.NoActionBar" parent="Theme.MaseteroInteligente" />
 
     <!-- Splash Screen Theme -->
     <style name="Theme.MaseteroInteligente.Splash">
