@@ -630,4 +630,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return rows;
     }
+
+    /**
+     * Obtener plantas por userId (alias de getUserPlants)
+     * @param userId ID del usuario
+     * @return Lista de plantas del usuario
+     */
+    public List<Plant> getPlantsByUserId(int userId) {
+        return getUserPlants(userId);
+    }
 }

@@ -2,9 +2,11 @@
 <resources>
     <!-- Colores principales basados en el mockup -->
     <color name="primary_green">#2ECC40</color>
+    <color name="green_primary">#2ECC40</color>
     <color name="primary_green_dark">#27AE34</color>
     <color name="secondary_green">#B8E6B8</color>
     <color name="light_green">#C8F7C8</color>
+    <color name="green_light">#C8F7C8</color>
     <color name="background_cream">#FFF8E7</color>
     <color name="button_green">#A4D65E</color>
 
@@ -20,6 +22,7 @@
     <color name="text_secondary">#757575</color>
     <color name="text_hint">#BDBDBD</color>
     <color name="text_white">#FFFFFF</color>
+    <color name="text_disabled">#BDBDBD</color>
     <color name="teal_700">#018786</color>
 
     <!-- Colores adicionales -->

@@ -45,15 +45,15 @@ public class AddPlantActivity extends AppCompatActivity {
     private AutoCompleteTextView actvPlantType;
     private SwitchMaterial switchConnected;
     private MaterialButton btnSavePlant;
-    
+
     private DatabaseHelper dbHelper;
     private Uri selectedImageUri;
     private String currentPhotoPath;
-    
+
     // Tipos de plantas predefinidos
     private final String[] plantTypes = {
-        "Ornamental", "Medicinal", "Aromática", "Suculenta", 
-        "Frutal", "Hortaliza", "Cactus", "Helecho", "Otro"
+            "Ornamental", "Medicinal", "Aromática", "Suculenta",
+            "Frutal", "Hortaliza", "Cactus", "Helecho", "Otro"
     };
 
     // Activity Result Launchers
@@ -86,86 +86,86 @@ public class AddPlantActivity extends AppCompatActivity {
         actvPlantType = findViewById(R.id.actvPlantType);
         switchConnected = findViewById(R.id.switchConnected);
         btnSavePlant = findViewById(R.id.btnSavePlant);
-        
+
         dbHelper = new DatabaseHelper(this);
     }
 
     private void setupActivityResultLaunchers() {
         // Launcher para la cámara
         cameraLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK) {
-                    if (currentPhotoPath != null) {
-                        selectedImageUri = Uri.fromFile(new File(currentPhotoPath));
-                        displayImage(selectedImageUri);
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        if (currentPhotoPath != null) {
+                            selectedImageUri = Uri.fromFile(new File(currentPhotoPath));
+                            displayImage(selectedImageUri);
+                        }
                     }
                 }
-            }
         );
 
         // Launcher para la galería
         galleryLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    selectedImageUri = result.getData().getData();
-                    displayImage(selectedImageUri);
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        selectedImageUri = result.getData().getData();
+                        displayImage(selectedImageUri);
+                    }
                 }
-            }
         );
 
         // Launcher para permisos
         requestPermissionLauncher = registerForActivityResult(
-            new ActivityResultContracts.RequestPermission(),
-            isGranted -> {
-                if (isGranted) {
-                    openCamera();
-                } else {
-                    Toast.makeText(this, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        openCamera();
+                    } else {
+                        Toast.makeText(this, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
         );
     }
 
     private void setupListeners() {
         btnBack.setOnClickListener(v -> finish());
-        
+
         // Click en la imagen para seleccionar foto
         layoutImageOverlay.setOnClickListener(v -> showImageSourceDialog());
         ivPlantImage.setOnClickListener(v -> showImageSourceDialog());
-        
+
         btnSavePlant.setOnClickListener(v -> handleSavePlant());
     }
 
     private void setupPlantTypeDropdown() {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
-            this, 
-            android.R.layout.simple_dropdown_item_1line, 
-            plantTypes
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                plantTypes
         );
         actvPlantType.setAdapter(adapter);
     }
 
     private void showImageSourceDialog() {
         String[] options = {"Tomar foto", "Elegir de galería"};
-        
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Seleccionar imagen")
-            .setItems(options, (dialog, which) -> {
-                if (which == 0) {
-                    // Tomar foto
-                    checkCameraPermissionAndOpen();
-                } else {
-                    // Elegir de galería
-                    openGallery();
-                }
-            })
-            .show();
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        // Tomar foto
+                        checkCameraPermissionAndOpen();
+                    } else {
+                        // Elegir de galería
+                        openGallery();
+                    }
+                })
+                .show();
     }
 
     private void checkCameraPermissionAndOpen() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) 
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
             openCamera();
         } else {
@@ -182,11 +182,11 @@ public class AddPlantActivity extends AppCompatActivity {
             } catch (IOException ex) {
                 Toast.makeText(this, "Error al crear archivo de imagen", Toast.LENGTH_SHORT).show();
             }
-            
+
             if (photoFile != null) {
                 Uri photoURI = FileProvider.getUriForFile(this,
-                    "com.devst.mimaseterointeligente.fileprovider",
-                    photoFile);
+                        "com.devst.mimaseterointeligente.fileprovider",
+                        photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 cameraLauncher.launch(takePictureIntent);
             }
@@ -208,10 +208,10 @@ public class AddPlantActivity extends AppCompatActivity {
 
     private void displayImage(Uri imageUri) {
         Glide.with(this)
-            .load(imageUri)
-            .centerCrop()
-            .into(ivPlantImage);
-        
+                .load(imageUri)
+                .centerCrop()
+                .into(ivPlantImage);
+
         // Ocultar el overlay una vez que se selecciona una imagen
         layoutImageOverlay.setVisibility(View.GONE);
     }
@@ -246,8 +246,8 @@ public class AddPlantActivity extends AppCompatActivity {
         }
 
         // Obtener el ID del usuario actual
-        SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
-        int userId = prefs.getInt("user_id", -1);
+        SharedPreferences prefs = getSharedPreferences("MaseteroPrefs", MODE_PRIVATE);
+        int userId = prefs.getInt("userId", -1);
 
         if (userId == -1) {
             Toast.makeText(this, "Error: Usuario no identificado", Toast.LENGTH_SHORT).show();
@@ -262,7 +262,7 @@ public class AddPlantActivity extends AppCompatActivity {
         plant.setSpecies(species);
         plant.setScientificName(scientificName);
         plant.setConnected(isConnected);
-        
+
         // Guardar la URI de la imagen como String
         if (selectedImageUri != null) {
             plant.setImageUrl(selectedImageUri.toString());
@@ -273,7 +273,7 @@ public class AddPlantActivity extends AppCompatActivity {
 
         if (plantId > 0) {
             Toast.makeText(this, "Planta guardada exitosamente", Toast.LENGTH_SHORT).show();
-            
+
             // Retornar a la actividad anterior
             Intent resultIntent = new Intent();
             resultIntent.putExtra("plant_id", plantId);
