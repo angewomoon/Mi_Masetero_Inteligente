@@ -283,16 +283,20 @@ public class EditPlantActivity extends AppCompatActivity {
                 if (savedPath != null) {
                     currentPhotoPath = savedPath;
                     selectedImageUri = Uri.fromFile(new File(savedPath));
+                    imageUri = selectedImageUri; // Actualizar imageUri para usar en Glide
                 }
             } catch (IOException e) {
                 Toast.makeText(this, "Error al guardar la imagen", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
                 return;
             }
+        } else {
+            // Si viene de la cámara o es una ruta file://, actualizar selectedImageUri
+            selectedImageUri = imageUri;
         }
 
         Glide.with(this)
-            .load(selectedImageUri)
+            .load(imageUri)
             .centerCrop()
             .into(ivPlantImage);
     }

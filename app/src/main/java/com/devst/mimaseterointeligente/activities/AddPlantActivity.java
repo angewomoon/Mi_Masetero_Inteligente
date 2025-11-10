@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -39,6 +40,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class AddPlantActivity extends AppCompatActivity {
+
+    private static final String TAG = "AddPlantActivity";
 
     private ImageButton btnBack;
     private ImageView ivPlantImage;
@@ -98,11 +101,21 @@ public class AddPlantActivity extends AppCompatActivity {
         cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
+                    Log.d(TAG, "cameraLauncher: Resultado recibido, código: " + result.getResultCode());
                     if (result.getResultCode() == RESULT_OK) {
+                        Log.d(TAG, "cameraLauncher: RESULT_OK, currentPhotoPath: " + currentPhotoPath);
                         if (currentPhotoPath != null) {
                             selectedImageUri = Uri.fromFile(new File(currentPhotoPath));
+                            Log.d(TAG, "cameraLauncher: Mostrando imagen desde: " + selectedImageUri);
                             displayImage(selectedImageUri);
+                        } else {
+                            Log.e(TAG, "cameraLauncher: currentPhotoPath es null");
+                            Toast.makeText(AddPlantActivity.this, "Error: No se guardó la ruta de la foto", Toast.LENGTH_SHORT).show();
                         }
+                    } else if (result.getResultCode() == RESULT_CANCELED) {
+                        Log.d(TAG, "cameraLauncher: Usuario canceló la cámara");
+                    } else {
+                        Log.e(TAG, "cameraLauncher: Código de resultado inesperado: " + result.getResultCode());
                     }
                 }
         );
@@ -168,31 +181,53 @@ public class AddPlantActivity extends AppCompatActivity {
     }
 
     private void checkCameraPermissionAndOpen() {
+        Log.d(TAG, "checkCameraPermissionAndOpen: Verificando permisos de cámara");
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "checkCameraPermissionAndOpen: Permiso concedido, abriendo cámara");
             openCamera();
         } else {
+            Log.d(TAG, "checkCameraPermissionAndOpen: Solicitando permiso de cámara");
             requestPermissionLauncher.launch(Manifest.permission.CAMERA);
         }
     }
 
     private void openCamera() {
+        Log.d(TAG, "openCamera: Iniciando proceso de apertura de cámara");
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            } catch (IOException ex) {
-                Toast.makeText(this, "Error al crear archivo de imagen", Toast.LENGTH_SHORT).show();
-            }
 
-            if (photoFile != null) {
+        File photoFile = null;
+        try {
+            photoFile = createImageFile();
+            Log.d(TAG, "openCamera: Archivo creado exitosamente: " + photoFile.getAbsolutePath());
+        } catch (IOException ex) {
+            Log.e(TAG, "openCamera: Error al crear archivo de imagen", ex);
+            Toast.makeText(this, "Error al crear archivo de imagen: " + ex.getMessage(), Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (photoFile != null) {
+            try {
                 Uri photoURI = FileProvider.getUriForFile(this,
                         "com.devst.mimaseterointeligente.fileprovider",
                         photoFile);
+                Log.d(TAG, "openCamera: URI de FileProvider obtenida: " + photoURI.toString());
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+
+                // Intentar lanzar la cámara
+                Log.d(TAG, "openCamera: Lanzando cámara...");
                 cameraLauncher.launch(takePictureIntent);
+
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "openCamera: Error al obtener URI del FileProvider", e);
+                Toast.makeText(this, "Error al configurar la cámara: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            } catch (Exception e) {
+                Log.e(TAG, "openCamera: Error inesperado al abrir cámara", e);
+                Toast.makeText(this, "No se pudo abrir la cámara. Asegúrate de tener una aplicación de cámara instalada.", Toast.LENGTH_LONG).show();
             }
+        } else {
+            Log.e(TAG, "openCamera: photoFile es null después de la creación");
+            Toast.makeText(this, "Error: No se pudo crear el archivo de imagen", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -217,16 +252,20 @@ public class AddPlantActivity extends AppCompatActivity {
                 if (savedPath != null) {
                     currentPhotoPath = savedPath;
                     selectedImageUri = Uri.fromFile(new File(savedPath));
+                    imageUri = selectedImageUri; // Actualizar imageUri para usar en Glide
                 }
             } catch (IOException e) {
                 Toast.makeText(this, "Error al guardar la imagen", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
                 return;
             }
+        } else {
+            // Si viene de la cámara o es una ruta file://, actualizar selectedImageUri
+            selectedImageUri = imageUri;
         }
 
         Glide.with(this)
-                .load(selectedImageUri)
+                .load(imageUri)
                 .centerCrop()
                 .into(ivPlantImage);
 
