@@ -383,19 +383,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(KEY_PLANT_ID, alert.getPlantId());
-        values.put(KEY_ALERT_TYPE, alert.getAlertType());   // <— aquí
+        values.put(KEY_ALERT_TYPE, alert.getAlertType());
         values.put(KEY_TITLE, alert.getTitle());
         values.put(KEY_MESSAGE, alert.getMessage());
         values.put(KEY_SEVERITY, alert.getSeverity());
         values.put(KEY_IS_READ, alert.isRead() ? 1 : 0);
         values.put(KEY_ICON_TYPE, alert.getIconType());
-        values.put(KEY_TIMESTAMP, alert.getTimestamp());    // <— aquí
+        values.put(KEY_TIMESTAMP, alert.getTimestamp());
 
         long alertId = db.insert(TABLE_ALERTS, null, values);
         db.close();
         return alertId;
     }
-
 
     // Obtener todas las alertas
     public List<Alert> getAllAlerts() {
@@ -410,7 +409,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Alert alert = new Alert();
                 alert.setId(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_ID)));
                 alert.setPlantId(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_PLANT_ID)));
-                alert.setType(cursor.getString(cursor.getColumnIndexOrThrow(KEY_ALERT_TYPE))); // <-- aquí
+                alert.setType(cursor.getString(cursor.getColumnIndexOrThrow(KEY_ALERT_TYPE)));
                 alert.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(KEY_TITLE)));
                 alert.setMessage(cursor.getString(cursor.getColumnIndexOrThrow(KEY_MESSAGE)));
                 alert.setSeverity(cursor.getString(cursor.getColumnIndexOrThrow(KEY_SEVERITY)));
@@ -426,7 +425,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return alerts;
     }
-
 
     // Marcar alerta como leída
     public void markAlertAsRead(int alertId) {
@@ -456,6 +454,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return count;
     }
+
     /**
      * Obtener plantas conectadas al masetero
      */
@@ -484,6 +483,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return plants;
     }
+
     // Convierte el cursor de PLANTS a un objeto Plant
     private Plant cursorToPlant(Cursor cursor) {
         Plant plant = new Plant();
@@ -547,16 +547,87 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Alert alert = new Alert();
         alert.setId(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_ID)));
         alert.setPlantId(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_PLANT_ID)));
-        // en tu modelo el setter es setType(...)
         alert.setType(cursor.getString(cursor.getColumnIndexOrThrow(KEY_ALERT_TYPE)));
         alert.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(KEY_TITLE)));
         alert.setMessage(cursor.getString(cursor.getColumnIndexOrThrow(KEY_MESSAGE)));
         alert.setSeverity(cursor.getString(cursor.getColumnIndexOrThrow(KEY_SEVERITY)));
         alert.setRead(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_IS_READ)) == 1);
         alert.setIconType(cursor.getString(cursor.getColumnIndexOrThrow(KEY_ICON_TYPE)));
-        // en tu tabla el tiempo es 'timestamp' y el setter es setTimestamp(...)
         alert.setTimestamp(cursor.getString(cursor.getColumnIndexOrThrow(KEY_TIMESTAMP)));
         return alert;
     }
 
+    // ========== MÉTODOS PARA RECUPERACIÓN DE CONTRASEÑA ==========
+    // ✨ NUEVOS MÉTODOS AGREGADOS ✨
+
+    /**
+     * Verificar si un email existe en la base de datos
+     * @param email Email del usuario a verificar
+     * @return true si el email existe, false si no existe
+     */
+    public boolean emailExists(String email) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(
+                TABLE_USERS,
+                new String[]{KEY_EMAIL},
+                KEY_EMAIL + "=?",
+                new String[]{email},
+                null, null, null
+        );
+
+        boolean exists = cursor != null && cursor.getCount() > 0;
+
+        if (cursor != null) {
+            cursor.close();
+        }
+        db.close();
+
+        return exists;
+    }
+
+    /**
+     * Actualizar la contraseña de un usuario por email
+     * @param email Email del usuario
+     * @param hashedPassword Contraseña hasheada (SHA-256)
+     * @return true si se actualizó correctamente, false si falló
+     */
+    public boolean updatePassword(String email, String hashedPassword) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_PASSWORD, hashedPassword);
+        values.put(KEY_UPDATED_AT, System.currentTimeMillis());
+
+        int rowsAffected = db.update(
+                TABLE_USERS,
+                values,
+                KEY_EMAIL + "=?",
+                new String[]{email}
+        );
+
+        db.close();
+        return rowsAffected > 0;
+    }
+    public int updatePlant(Plant plant) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_PLANT_NAME, plant.getName());
+        values.put(KEY_TYPE, plant.getType());
+        values.put(KEY_SPECIES, plant.getSpecies());
+        values.put(KEY_SCIENTIFIC_NAME, plant.getScientificName());
+        values.put(KEY_IMAGE_URL, plant.getImageUrl());        // null si no cambió
+        values.put(KEY_IS_CONNECTED, plant.isConnected() ? 1 : 0);
+        values.put(KEY_UPDATED_AT, String.valueOf(System.currentTimeMillis()));
+
+        int rows = db.update(
+                TABLE_PLANTS,
+                values,
+                KEY_ID + "=?",
+                new String[]{ String.valueOf(plant.getId()) }
+        );
+
+        db.close();
+        return rows;
+    }
 }

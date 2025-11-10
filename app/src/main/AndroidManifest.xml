@@ -108,6 +108,17 @@
             android:name=".services.SensorMonitorService"
             android:exported="false" />
 
+        <!-- ✨ NUEVO: FileProvider para acceso seguro a archivos (cámara e imágenes) ✨ -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.devst.mimaseterointeligente.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
     </application>
 
 </manifest>
