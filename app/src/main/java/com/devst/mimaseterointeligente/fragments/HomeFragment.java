@@ -68,25 +68,35 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        Log.d(TAG, "onViewCreated: Iniciando HomeFragment");
+
         // Inicializar vistas
         initViews(view);
 
         // Inicializar base de datos
         databaseHelper = new DatabaseHelper(requireContext());
+        Log.d(TAG, "onViewCreated: DatabaseHelper inicializado");
 
         // Obtener userId de SharedPreferences
         SharedPreferences prefs = requireActivity().getSharedPreferences("MaseteroPrefs", MODE_PRIVATE);
         userId = prefs.getInt("userId", -1);
+        Log.d(TAG, "onViewCreated: userId obtenido = " + userId);
 
         // Configurar RecyclerView
         setupRecyclerView();
+        Log.d(TAG, "onViewCreated: RecyclerView configurado");
 
         // Cargar datos
         loadPlants();
         loadWeatherData();
 
         // Configurar botón de añadir planta
-        cardAddPlant.setOnClickListener(v -> openAddPlantActivity());
+        cardAddPlant.setOnClickListener(v -> {
+            Log.d(TAG, "Botón añadir planta clickeado");
+            openAddPlantActivity();
+        });
+
+        Log.d(TAG, "onViewCreated: HomeFragment completamente inicializado");
     }
 
     @Override
@@ -106,6 +116,16 @@ public class HomeFragment extends Fragment {
         rvPlants = view.findViewById(R.id.rvPlants);
         layoutEmptyState = view.findViewById(R.id.layoutEmptyState);
         cardAddPlant = view.findViewById(R.id.cardAddPlant);
+
+        // Verificar que todas las vistas se encontraron
+        if (tvTemperature == null) Log.e(TAG, "ERROR: tvTemperature es null");
+        if (tvWeatherDescription == null) Log.e(TAG, "ERROR: tvWeatherDescription es null");
+        if (ivWeatherIcon == null) Log.e(TAG, "ERROR: ivWeatherIcon es null");
+        if (rvPlants == null) Log.e(TAG, "ERROR: rvPlants es null");
+        if (layoutEmptyState == null) Log.e(TAG, "ERROR: layoutEmptyState es null");
+        if (cardAddPlant == null) Log.e(TAG, "ERROR: cardAddPlant es null");
+
+        Log.d(TAG, "initViews: Todas las vistas inicializadas correctamente");
     }
 
     /**
@@ -121,25 +141,43 @@ public class HomeFragment extends Fragment {
      * Cargar plantas del usuario desde la base de datos
      */
     private void loadPlants() {
+        Log.d(TAG, "loadPlants: Iniciando carga de plantas");
+        Log.d(TAG, "loadPlants: userId = " + userId);
+
         if (userId == -1) {
-            Log.e(TAG, "Usuario no identificado");
+            Log.e(TAG, "loadPlants: Usuario no identificado (userId = -1)");
             showEmptyState();
             return;
         }
 
-        // Obtener plantas del usuario
-        List<Plant> plants = databaseHelper.getPlantsByUserId(userId);
+        try {
+            // Obtener plantas del usuario
+            Log.d(TAG, "loadPlants: Llamando a databaseHelper.getPlantsByUserId(" + userId + ")");
+            List<Plant> plants = databaseHelper.getPlantsByUserId(userId);
+            Log.d(TAG, "loadPlants: Respuesta de BD recibida. plants == null? " + (plants == null));
 
-        if (plants != null && !plants.isEmpty()) {
-            // Mostrar plantas en el RecyclerView
-            plantAdapter.setPlants(plants);
-            rvPlants.setVisibility(View.VISIBLE);
-            layoutEmptyState.setVisibility(View.GONE);
-            Log.d(TAG, "Cargadas " + plants.size() + " plantas");
-        } else {
-            // Mostrar mensaje de estado vacío
+            if (plants != null) {
+                Log.d(TAG, "loadPlants: Número de plantas obtenidas: " + plants.size());
+
+                if (!plants.isEmpty()) {
+                    // Mostrar plantas en el RecyclerView
+                    Log.d(TAG, "loadPlants: Hay plantas, actualizando adapter");
+                    plantAdapter.setPlants(plants);
+                    rvPlants.setVisibility(View.VISIBLE);
+                    layoutEmptyState.setVisibility(View.GONE);
+                    Log.d(TAG, "loadPlants: ✓ Cargadas " + plants.size() + " plantas exitosamente");
+                } else {
+                    // Mostrar mensaje de estado vacío
+                    Log.d(TAG, "loadPlants: Lista de plantas vacía");
+                    showEmptyState();
+                }
+            } else {
+                Log.e(TAG, "loadPlants: La lista de plantas es null");
+                showEmptyState();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "loadPlants: ERROR al cargar plantas: " + e.getMessage(), e);
             showEmptyState();
-            Log.d(TAG, "No hay plantas para mostrar");
         }
     }
 
@@ -147,8 +185,10 @@ public class HomeFragment extends Fragment {
      * Mostrar estado vacío cuando no hay plantas
      */
     private void showEmptyState() {
+        Log.d(TAG, "showEmptyState: Mostrando estado vacío");
         rvPlants.setVisibility(View.GONE);
         layoutEmptyState.setVisibility(View.VISIBLE);
+        Log.d(TAG, "showEmptyState: rvPlants.visibility = GONE, layoutEmptyState.visibility = VISIBLE");
     }
 
     /**
@@ -164,10 +204,17 @@ public class HomeFragment extends Fragment {
         latitude = Double.parseDouble(prefs.getString("latitude", String.valueOf(latitude)));
         longitude = Double.parseDouble(prefs.getString("longitude", String.valueOf(longitude)));
 
-        // **INICIO DE LA CORRECCIÓN**
-        String apiKey = "TU_API_KEY_AQUI"; // ¡¡¡IMPORTANTE: Reemplaza con tu API Key real!!!
-        String units = "metric"; // Para obtener la temperatura en Celsius
-        String lang = "es";      // Para obtener la descripción en español
+        // Verificar si la API key está configurada
+        if (!com.devst.mimaseterointeligente.api.ApiConfig.isWeatherApiKeyConfigured()) {
+            Log.w(TAG, "API Key del clima no está configurada");
+            setDefaultWeatherUI();
+            return;
+        }
+
+        // Usar configuración desde ApiConfig
+        String apiKey = com.devst.mimaseterointeligente.api.ApiConfig.WEATHER_API_KEY;
+        String units = com.devst.mimaseterointeligente.api.ApiConfig.WEATHER_UNITS;
+        String lang = com.devst.mimaseterointeligente.api.ApiConfig.WEATHER_LANG;
 
         // Llamar a la API del clima con el método y parámetros correctos
         RetrofitClient.getWeatherApiService()

@@ -43,6 +43,19 @@ public class Plant implements Serializable {
 
     // Establecer parámetros óptimos según la especie
     public void setOptimalParametersBySpecies(String species) {
+        // Si species es null, usar valores por defecto
+        if (species == null) {
+            this.optimalSoilHumidityMin = 30.0f;
+            this.optimalSoilHumidityMax = 60.0f;
+            this.optimalTempMin = 18.0f;
+            this.optimalTempMax = 28.0f;
+            this.optimalAmbientHumidityMin = 40.0f;
+            this.optimalAmbientHumidityMax = 60.0f;
+            this.optimalLightLevel = "Luz Indirecta";
+            this.isConnected = false;
+            return;
+        }
+
         switch (species) {
             case SPECIES_CHLOROPHYTUM:
                 // Chlorophytum comosum (Cinta/Malamadre)

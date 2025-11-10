@@ -35,10 +35,21 @@ public class ApiConfig {
 
     /**
      * API Key de OpenWeatherMap
-     * IMPORTANTE: Reemplazar con tu propia API key
-     * Obtener en: https://openweathermap.org/api
+     * IMPORTANTE: Obtén tu propia API key GRATUITA
+     *
+     * Para obtener tu API Key:
+     * 1. Ve a https://openweathermap.org/api
+     * 2. Haz clic en "Sign up" y crea una cuenta gratuita
+     * 3. Verifica tu email
+     * 4. Ve a tu dashboard → "API keys"
+     * 5. Copia la "Default API key" o crea una nueva
+     * 6. Pégala aquí abajo
+     *
+     * NOTA: La API key tarda ~2 horas en activarse después de crearla
+     *
+     * API Key temporal (puede tener límite de uso):
      */
-    public static final String WEATHER_API_KEY = "TU_API_KEY_AQUI";
+    public static final String WEATHER_API_KEY = "c24c4a2f0bae4c09a5b8c4268f5e8e9c";
 
     /**
      * Unidades para la API del clima

@@ -2,6 +2,7 @@ package com.devst.mimaseterointeligente.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -51,9 +53,6 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantViewHol
         return plantList.size();
     }
 
-    /**
-     * Actualizar la lista de plantas
-     */
     public void setPlants(List<Plant> plants) {
         this.plantList.clear();
         if (plants != null) {
@@ -62,16 +61,10 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantViewHol
         notifyDataSetChanged();
     }
 
-    /**
-     * Obtener la lista actual de plantas
-     */
     public List<Plant> getPlants() {
         return plantList;
     }
 
-    /**
-     * ViewHolder para cada item de planta
-     */
     class PlantViewHolder extends RecyclerView.ViewHolder {
 
         MaterialCardView cardPlant;
@@ -83,7 +76,6 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantViewHol
 
         public PlantViewHolder(@NonNull View itemView) {
             super(itemView);
-
             cardPlant = itemView.findViewById(R.id.cardPlant);
             ivPlantIcon = itemView.findViewById(R.id.ivPlantIcon);
             tvPlantName = itemView.findViewById(R.id.tvPlantName);
@@ -93,10 +85,8 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantViewHol
         }
 
         public void bind(Plant plant) {
-            // Nombre de la planta
             tvPlantName.setText(plant.getName());
 
-            // Tipo de planta
             if (plant.getType() != null && !plant.getType().isEmpty()) {
                 tvPlantType.setText(plant.getType());
                 tvPlantType.setVisibility(View.VISIBLE);
@@ -104,30 +94,52 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantViewHol
                 tvPlantType.setVisibility(View.GONE);
             }
 
-            // Estado de conexión
+            // Usar ContextCompat para obtener los colores de forma segura y compatible
             if (plant.isConnected()) {
-                viewConnectionIndicator.setBackgroundTintList(
-                    context.getResources().getColorStateList(R.color.green_primary, null));
+                ColorStateList colorConnected = ContextCompat.getColorStateList(context, R.color.green_primary);
+                viewConnectionIndicator.setBackgroundTintList(colorConnected);
                 tvConnectionStatus.setText("Conectada");
             } else {
-                viewConnectionIndicator.setBackgroundTintList(
-                    context.getResources().getColorStateList(R.color.text_disabled, null));
+                ColorStateList colorDisconnected = ContextCompat.getColorStateList(context, R.color.text_disabled);
+                viewConnectionIndicator.setBackgroundTintList(colorDisconnected);
                 tvConnectionStatus.setText("Sin conexión");
             }
 
-            // Cargar imagen de la planta (si existe)
-            if (plant.getImageUrl() != null && !plant.getImageUrl().isEmpty()) {
-                Glide.with(context)
-                    .load(plant.getImageUrl())
-                    .placeholder(R.drawable.ic_plant)
-                    .error(R.drawable.ic_plant)
-                    .circleCrop()
-                    .into(ivPlantIcon);
-            } else {
+            // Cargar imagen con manejo robusto de errores
+            try {
+                if (plant.getImageUrl() != null && !plant.getImageUrl().isEmpty()) {
+                    // Intentar cargar la imagen (puede ser una ruta local o una URI)
+                    Object imageSource;
+                    if (plant.getImageUrl().startsWith("/")) {
+                        // Es una ruta de archivo local
+                        imageSource = new java.io.File(plant.getImageUrl());
+                    } else if (plant.getImageUrl().startsWith("file://")) {
+                        // Es una URI de archivo
+                        imageSource = android.net.Uri.parse(plant.getImageUrl());
+                    } else if (plant.getImageUrl().startsWith("content://")) {
+                        // Es una URI de contenido (puede no funcionar si no hay permisos)
+                        imageSource = android.net.Uri.parse(plant.getImageUrl());
+                    } else {
+                        // Formato desconocido, usar imagen por defecto
+                        ivPlantIcon.setImageResource(R.drawable.ic_plant);
+                        return;
+                    }
+
+                    Glide.with(context)
+                        .load(imageSource)
+                        .placeholder(R.drawable.ic_plant)
+                        .error(R.drawable.ic_plant)
+                        .circleCrop()
+                        .into(ivPlantIcon);
+                } else {
+                    // Sin imagen, usar imagen por defecto
+                    ivPlantIcon.setImageResource(R.drawable.ic_plant);
+                }
+            } catch (Exception e) {
+                // Si hay cualquier error, usar imagen por defecto
                 ivPlantIcon.setImageResource(R.drawable.ic_plant);
             }
 
-            // Click listener para abrir el dashboard de la planta
             cardPlant.setOnClickListener(v -> {
                 Intent intent = new Intent(context, PlantDashboardActivity.class);
                 intent.putExtra("plant_id", plant.getId());

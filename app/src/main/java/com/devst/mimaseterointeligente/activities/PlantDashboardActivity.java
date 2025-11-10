@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.devst.mimaseterointeligente.R;
 import com.devst.mimaseterointeligente.api.RetrofitClient;
 import com.devst.mimaseterointeligente.database.DatabaseHelper;
@@ -155,10 +156,41 @@ public class PlantDashboardActivity extends AppCompatActivity {
         tvPlantName.setText(plant.getName());
         tvScientificName.setText(plant.getScientificName());
 
-        // TODO: Cargar imagen de la planta usando Glide
-        // if (plant.getImageUrl() != null && !plant.getImageUrl().isEmpty()) {
-        //     Glide.with(this).load(plant.getImageUrl()).into(ivPlantImage);
-        // }
+        // Cargar imagen de la planta usando Glide
+        if (plant.getImageUrl() != null && !plant.getImageUrl().isEmpty()) {
+            try {
+                // Determinar el tipo de fuente de imagen
+                Object imageSource;
+                if (plant.getImageUrl().startsWith("/")) {
+                    // Es una ruta de archivo local
+                    imageSource = new java.io.File(plant.getImageUrl());
+                } else if (plant.getImageUrl().startsWith("file://")) {
+                    // Es una URI de archivo
+                    imageSource = android.net.Uri.parse(plant.getImageUrl());
+                } else if (plant.getImageUrl().startsWith("content://")) {
+                    // Es una URI de contenido
+                    imageSource = android.net.Uri.parse(plant.getImageUrl());
+                } else {
+                    // Formato desconocido, usar imagen por defecto
+                    ivPlantImage.setImageResource(R.drawable.ic_plant);
+                    return;
+                }
+
+                Glide.with(this)
+                    .load(imageSource)
+                    .placeholder(R.drawable.ic_plant)
+                    .error(R.drawable.ic_plant)
+                    .centerCrop()
+                    .into(ivPlantImage);
+            } catch (Exception e) {
+                // Si hay cualquier error, usar imagen por defecto
+                ivPlantImage.setImageResource(R.drawable.ic_plant);
+                Log.e(TAG, "Error al cargar imagen de planta: " + e.getMessage());
+            }
+        } else {
+            // Sin imagen, usar imagen por defecto
+            ivPlantImage.setImageResource(R.drawable.ic_plant);
+        }
     }
 
     /**

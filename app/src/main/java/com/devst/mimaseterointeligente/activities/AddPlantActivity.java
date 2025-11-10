@@ -33,7 +33,10 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class AddPlantActivity extends AppCompatActivity {
 
@@ -207,13 +210,79 @@ public class AddPlantActivity extends AppCompatActivity {
     }
 
     private void displayImage(Uri imageUri) {
+        // Si la imagen viene de la galería (content://), copiarla al almacenamiento interno
+        if (imageUri.getScheme() != null && imageUri.getScheme().equals("content")) {
+            try {
+                String savedPath = copyImageToInternalStorage(imageUri);
+                if (savedPath != null) {
+                    currentPhotoPath = savedPath;
+                    selectedImageUri = Uri.fromFile(new File(savedPath));
+                }
+            } catch (IOException e) {
+                Toast.makeText(this, "Error al guardar la imagen", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+                return;
+            }
+        }
+
         Glide.with(this)
-                .load(imageUri)
+                .load(selectedImageUri)
                 .centerCrop()
                 .into(ivPlantImage);
 
         // Ocultar el overlay una vez que se selecciona una imagen
         layoutImageOverlay.setVisibility(View.GONE);
+    }
+
+    /**
+     * Copia una imagen desde una URI a un archivo en el almacenamiento interno
+     * @param sourceUri URI de la imagen original
+     * @return Ruta absoluta del archivo copiado
+     * @throws IOException si ocurre un error al copiar
+     */
+    private String copyImageToInternalStorage(Uri sourceUri) throws IOException {
+        // Crear archivo de destino
+        String imageFileName = "PLANT_" + System.currentTimeMillis() + ".jpg";
+        File storageDir = getExternalFilesDir(null);
+        File destinationFile = new File(storageDir, imageFileName);
+
+        // Copiar el contenido
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+
+        try {
+            inputStream = getContentResolver().openInputStream(sourceUri);
+            if (inputStream == null) {
+                throw new IOException("No se pudo abrir la imagen de origen");
+            }
+
+            outputStream = new FileOutputStream(destinationFile);
+
+            // Copiar bytes
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+
+            return destinationFile.getAbsolutePath();
+
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private void handleSavePlant() {
@@ -263,9 +332,9 @@ public class AddPlantActivity extends AppCompatActivity {
         plant.setScientificName(scientificName);
         plant.setConnected(isConnected);
 
-        // Guardar la URI de la imagen como String
-        if (selectedImageUri != null) {
-            plant.setImageUrl(selectedImageUri.toString());
+        // Guardar la ruta de la imagen local
+        if (currentPhotoPath != null) {
+            plant.setImageUrl(currentPhotoPath);
         }
 
         // Guardar en la base de datos

@@ -11,6 +11,7 @@ import com.devst.mimaseterointeligente.models.Alert;
 import com.devst.mimaseterointeligente.models.Plant;
 import com.devst.mimaseterointeligente.models.SensorData;
 import com.devst.mimaseterointeligente.models.User;
+import com.devst.mimaseterointeligente.utils.PasswordUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // Información de la base de datos
     private static final String DATABASE_NAME = "MaseteroInteligente.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // Tablas
     private static final String TABLE_USERS = "users";
@@ -144,8 +145,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_PLANTS);
         db.execSQL(CREATE_TABLE_SENSOR_DATA);
         db.execSQL(CREATE_TABLE_ALERTS);
-
         Log.d(TAG, "Database tables created");
+
+        // ✨ AÑADIR DATOS DE PRUEBA INICIALES ✨
+        addInitialData(db);
     }
 
     @Override
@@ -159,6 +162,81 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Crear tablas nuevas
         onCreate(db);
     }
+
+    /**
+     * Añade datos iniciales a la base de datos.
+     * Este método es llamado solo cuando la base de datos se crea por primera vez.
+     */
+    private void addInitialData(SQLiteDatabase db) {
+        ContentValues userValues = new ContentValues();
+        userValues.put(KEY_NAME, "Usuario de Prueba");
+        userValues.put(KEY_EMAIL, "usuario@gmail.com");
+        // **CORREGIDO:** Usar el hash SHA-256 correcto para "123456"
+        userValues.put(KEY_PASSWORD, "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92");
+        long userId1 = db.insert(TABLE_USERS, null, userValues);
+
+        ContentValues plant1Values = new ContentValues();
+        plant1Values.put(KEY_USER_ID, userId1);
+        plant1Values.put(KEY_PLANT_NAME, "Mi Suculenta");
+        plant1Values.put(KEY_TYPE, "Suculenta");
+        long plantId1 = db.insert(TABLE_PLANTS, null, plant1Values);
+
+        ContentValues plant2Values = new ContentValues();
+        plant2Values.put(KEY_USER_ID, userId1);
+        plant2Values.put(KEY_PLANT_NAME, "Helecho del balcón");
+        plant2Values.put(KEY_TYPE, "Planta de interior");
+        db.insert(TABLE_PLANTS, null, plant2Values);
+
+        long currentTime = System.currentTimeMillis();
+
+        ContentValues alert1 = new ContentValues();
+        alert1.put(KEY_PLANT_ID, plantId1);
+        alert1.put(KEY_ALERT_TYPE, Alert.TYPE_LOW_SOIL_HUMIDITY);
+        alert1.put(KEY_TITLE, "Humedad Baja");
+        alert1.put(KEY_MESSAGE, "La humedad de tu planta está por debajo del nivel óptimo. Considera regar.");
+        alert1.put(KEY_SEVERITY, Alert.SEVERITY_WARNING);
+        alert1.put(KEY_ICON_TYPE, "water");
+        alert1.put(KEY_IS_READ, 0);
+        alert1.put(KEY_TIMESTAMP, String.valueOf(currentTime - 10 * 60 * 1000)); // Hace 10 minutos
+        db.insert(TABLE_ALERTS, null, alert1);
+
+        ContentValues alert2 = new ContentValues();
+        alert2.put(KEY_PLANT_ID, plantId1);
+        alert2.put(KEY_ALERT_TYPE, Alert.TYPE_LOW_LIGHT);
+        alert2.put(KEY_TITLE, "Poca luz");
+        alert2.put(KEY_MESSAGE, "Tu planta necesita más luz solar. Muévela a un lugar más iluminado.");
+        alert2.put(KEY_SEVERITY, Alert.SEVERITY_WARNING);
+        alert2.put(KEY_ICON_TYPE, "sun");
+        alert2.put(KEY_IS_READ, 0);
+        alert2.put(KEY_TIMESTAMP, String.valueOf(currentTime - 15 * 60 * 1000)); // Hace 15 minutos
+        db.insert(TABLE_ALERTS, null, alert2);
+
+        ContentValues alert3 = new ContentValues();
+        alert3.put(KEY_PLANT_ID, plantId1);
+        alert3.put(KEY_ALERT_TYPE, Alert.TYPE_PEST_DETECTED);
+        alert3.put(KEY_TITLE, "¡Plaga Detectada!");
+        alert3.put(KEY_MESSAGE, "Se ha detectado una posible plaga. Revisa tu planta.");
+        alert3.put(KEY_SEVERITY, Alert.SEVERITY_CRITICAL);
+        alert3.put(KEY_ICON_TYPE, "bug");
+        alert3.put(KEY_IS_READ, 0);
+        alert3.put(KEY_TIMESTAMP, String.valueOf(currentTime - 30 * 60 * 1000)); // Hace 30 minutos
+        db.insert(TABLE_ALERTS, null, alert3);
+
+        ContentValues alert4 = new ContentValues();
+        alert4.put(KEY_PLANT_ID, plantId1);
+        alert4.put(KEY_ALERT_TYPE, Alert.TYPE_LOW_WATER);
+        alert4.put(KEY_TITLE, "Nivel de Agua bajo");
+        alert4.put(KEY_MESSAGE, "El nivel de agua actualmente es bajo. Considere rellenar.");
+        alert4.put(KEY_SEVERITY, Alert.SEVERITY_WARNING);
+        alert4.put(KEY_ICON_TYPE, "water");
+        alert4.put(KEY_IS_READ, 0);
+        alert4.put(KEY_TIMESTAMP, String.valueOf(currentTime - 5 * 60 * 60 * 1000)); // Hace 5 horas
+        db.insert(TABLE_ALERTS, null, alert4);
+
+        Log.d(TAG, "Datos de prueba iniciales insertados correctamente.");
+    }
+
+    // ... (resto de tus métodos)
 
     // ========== OPERACIONES DE USUARIOS ==========
 
