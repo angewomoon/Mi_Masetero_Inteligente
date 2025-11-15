@@ -735,4 +735,215 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public List<Plant> getPlantsByUserId(int userId) {
         return getUserPlants(userId);
     }
+
+    // ========== MÉTODOS AUXILIARES PARA MIGRACIÓN ==========
+
+    /**
+     * Limpiar todas las tablas de la base de datos
+     * PRECAUCIÓN: Esta operación elimina TODOS los datos
+     */
+    public void clearAllTables() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        try {
+            db.beginTransaction();
+
+            // Eliminar en orden inverso por Foreign Keys
+            db.delete(TABLE_ALERTS, null, null);
+            db.delete(TABLE_SENSOR_DATA, null, null);
+            db.delete(TABLE_PLANTS, null, null);
+            db.delete(TABLE_USERS, null, null);
+
+            db.setTransactionSuccessful();
+            Log.d(TAG, "Todas las tablas han sido limpiadas");
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error al limpiar tablas: " + e.getMessage());
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
+    }
+
+    /**
+     * Obtener estadísticas de la base de datos
+     * @return Map con el conteo de registros por tabla
+     */
+    public java.util.Map<String, Integer> getTableStats() {
+        java.util.Map<String, Integer> stats = new java.util.HashMap<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        try {
+            // Contar usuarios
+            Cursor cursorUsers = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_USERS, null);
+            if (cursorUsers.moveToFirst()) {
+                stats.put("users", cursorUsers.getInt(0));
+            }
+            cursorUsers.close();
+
+            // Contar plantas
+            Cursor cursorPlants = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_PLANTS, null);
+            if (cursorPlants.moveToFirst()) {
+                stats.put("plants", cursorPlants.getInt(0));
+            }
+            cursorPlants.close();
+
+            // Contar datos de sensores
+            Cursor cursorSensors = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_SENSOR_DATA, null);
+            if (cursorSensors.moveToFirst()) {
+                stats.put("sensor_data", cursorSensors.getInt(0));
+            }
+            cursorSensors.close();
+
+            // Contar alertas
+            Cursor cursorAlerts = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_ALERTS, null);
+            if (cursorAlerts.moveToFirst()) {
+                stats.put("alerts", cursorAlerts.getInt(0));
+            }
+            cursorAlerts.close();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error al obtener estadísticas: " + e.getMessage());
+        } finally {
+            db.close();
+        }
+
+        return stats;
+    }
+
+    /**
+     * Exportar base de datos a JSON (opcional)
+     * Útil para backup manual
+     */
+    public String exportToJSON() {
+        StringBuilder json = new StringBuilder();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        try {
+            json.append("{\n");
+
+            // Exportar cada tabla
+            String[] tables = {TABLE_USERS, TABLE_PLANTS, TABLE_SENSOR_DATA, TABLE_ALERTS};
+
+            for (int i = 0; i < tables.length; i++) {
+                String tableName = tables[i];
+                json.append("  \"").append(tableName).append("\": [\n");
+
+                Cursor cursor = db.rawQuery("SELECT * FROM " + tableName, null);
+
+                if (cursor.moveToFirst()) {
+                    do {
+                        json.append("    {");
+
+                        for (int j = 0; j < cursor.getColumnCount(); j++) {
+                            String columnName = cursor.getColumnName(j);
+                            String value = cursor.getString(j);
+
+                            json.append("\"").append(columnName).append("\": ");
+
+                            if (value == null) {
+                                json.append("null");
+                            } else {
+                                json.append("\"").append(value.replace("\"", "\\\"")).append("\"");
+                            }
+
+                            if (j < cursor.getColumnCount() - 1) {
+                                json.append(", ");
+                            }
+                        }
+
+                        json.append("}");
+
+                        if (!cursor.isLast()) {
+                            json.append(",");
+                        }
+                        json.append("\n");
+
+                    } while (cursor.moveToNext());
+                }
+
+                cursor.close();
+                json.append("  ]");
+
+                if (i < tables.length - 1) {
+                    json.append(",");
+                }
+                json.append("\n");
+            }
+
+            json.append("}\n");
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error al exportar a JSON: " + e.getMessage());
+            return null;
+        } finally {
+            db.close();
+        }
+
+        return json.toString();
+    }
+
+    public class SQLiteToFirebaseMigration {
+
+        private DatabaseReference firebaseRef;
+        private SQLiteDatabase sqliteDb;
+
+        public SQLiteToFirebaseMigration(Context context) {
+            // Inicializar Firebase
+            firebaseRef = FirebaseDatabase.getInstance().getReference();
+
+            // Abrir tu base de datos SQLite
+            MiDatabaseHelper dbHelper = new MiDatabaseHelper(context);
+            sqliteDb = dbHelper.getReadableDatabase();
+        }
+
+        // Migrar una tabla específica
+        public void migrarTabla(String nombreTabla, String nodoFirebase) {
+            Cursor cursor = sqliteDb.rawQuery("SELECT * FROM " + nombreTabla, null);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    // Crear un HashMap con los datos
+                    Map<String, Object> datos = new HashMap<>();
+
+                    // Obtener todas las columnas
+                    for (int i = 0; i < cursor.getColumnCount(); i++) {
+                        String columnName = cursor.getColumnName(i);
+                        String value = cursor.getString(i);
+                        datos.put(columnName, value);
+                    }
+
+                    // Subir a Firebase (usar un ID único)
+                    String id = cursor.getString(cursor.getColumnIndex("id"));
+                    firebaseRef.child(nodoFirebase).child(id).setValue(datos)
+                            .addOnSuccessListener(aVoid -> {
+                                Log.d("Migration", "Registro migrado: " + id);
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("Migration", "Error: " + e.getMessage());
+                            });
+
+                } while (cursor.moveToNext());
+            }
+
+            cursor.close();
+        }
+
+        // Migrar toda la base de datos
+        public void migrarTodasLasTablas() {
+            Cursor cursor = sqliteDb.rawQuery(
+                    "SELECT name FROM sqlite_master WHERE type='table'", null);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    String tableName = cursor.getString(0);
+                    if (!tableName.equals("android_metadata") &&
+                            !tableName.equals("sqlite_sequence")) {
+                        migrarTabla(tableName, tableName);
+                    }
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+    }
 }

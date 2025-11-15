@@ -115,5 +115,45 @@
 
     <string name="back">Volver</string>
 
+    <!-- Migration Activity -->
+    <string name="migration_title">Migración de Datos</string>
+    <string name="migration_description">Sincroniza tus datos entre SQLite local y Firebase</string>
+    <string name="migration_ready">Listo para migrar</string>
+
+    <!-- Estadísticas -->
+    <string name="migration_stats_title">Estadísticas</string>
+    <string name="migration_sqlite_label">SQLite Local</string>
+    <string name="migration_firebase_label">Firebase</string>
+    <string name="migration_users_count">Usuarios: 0</string>
+    <string name="migration_plants_count">Plantas: 0</string>
+    <string name="migration_sensors_count">Sensores: 0</string>
+    <string name="migration_alerts_count">Alertas: 0</string>
+    <string name="migration_refresh_stats">Actualizar Estadísticas</string>
+
+    <!-- Exportar -->
+    <string name="migration_export_title">Exportar a Firebase</string>
+    <string name="migration_export_all">Exportar Todo</string>
+    <string name="migration_export_users">Usuarios</string>
+    <string name="migration_export_plants">Plantas</string>
+    <string name="migration_export_sensors">Sensores</string>
+    <string name="migration_export_alerts">Alertas</string>
+
+    <!-- Importar -->
+    <string name="migration_import_title">Importar desde Firebase</string>
+    <string name="migration_import_all">Importar Todo</string>
+    <string name="migration_import_users">Usuarios</string>
+    <string name="migration_import_plants">Plantas</string>
+    <string name="migration_import_sensors">Sensores</string>
+    <string name="migration_import_alerts">Alertas</string>
+
+    <!-- Avanzado -->
+    <string name="migration_advanced_title">Opciones Avanzadas</string>
+    <string name="migration_clear_database">Limpiar Base de Datos Local</string>
+
+    <!-- Logs -->
+    <string name="migration_logs_title">Registro de Actividad</string>
+    <string name="migration_logs_empty">No hay actividad registrada</string>
+    <string name="migration_clear_logs">Limpiar Logs</string>
+
 
 </resources>

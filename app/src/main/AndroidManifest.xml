@@ -106,6 +106,10 @@
             android:name=".activities.EditProfileActivity"
             android:theme="@style/Theme.MaseteroInteligente.NoActionBar" /> <!-- CORREGIDO -->
 
+        <activity
+            android:name=".activities.MigrationActivity"
+            android:theme="@style/Theme.MaseteroInteligente" />
+
         <!-- Configuración de Google Sign-In -->
         <meta-data
             android:name="com.google.android.gms.version"
