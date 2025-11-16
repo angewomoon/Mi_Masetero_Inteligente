@@ -155,5 +155,13 @@
     <string name="migration_logs_empty">No hay actividad registrada</string>
     <string name="migration_clear_logs">Limpiar Logs</string>
 
+    <!-- Device Selection -->
+    <string name="device_selection_title">Seleccionar Dispositivo</string>
+    <string name="device_selection_description">Elige el masetero inteligente para tu planta</string>
+    <string name="device_selection_empty">No hay dispositivos disponibles.\nAsegúrate de que tu ESP32 esté encendido y conectado.</string>
+    <string name="device_selection_section_title">Dispositivo ESP32</string>
+    <string name="device_none_selected">Ningún dispositivo seleccionado</string>
+    <string name="device_select_button">Buscar Dispositivos Disponibles</string>
+
 
 </resources>

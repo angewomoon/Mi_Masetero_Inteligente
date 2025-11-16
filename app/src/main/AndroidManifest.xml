@@ -110,6 +110,10 @@
             android:name=".activities.MigrationActivity"
             android:theme="@style/Theme.MaseteroInteligente" />
 
+        <activity
+            android:name=".activities.DeviceSelectionActivity"
+            android:theme="@style/Theme.MaseteroInteligente" />
+
         <!-- Configuración de Google Sign-In -->
         <meta-data
             android:name="com.google.android.gms.version"

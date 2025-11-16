@@ -22,7 +22,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // Información de la base de datos
     private static final String DATABASE_NAME = "MaseteroInteligente.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3; // Actualizado para incluir device_id
 
     // Tablas
     private static final String TABLE_USERS = "users";
@@ -50,6 +50,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_SCIENTIFIC_NAME = "scientific_name";
     private static final String KEY_IMAGE_URL = "image_url";
     private static final String KEY_IS_CONNECTED = "is_connected";
+    private static final String KEY_DEVICE_ID = "device_id"; // ID del dispositivo ESP32
     private static final String KEY_OPTIMAL_SOIL_HUM_MIN = "optimal_soil_hum_min";
     private static final String KEY_OPTIMAL_SOIL_HUM_MAX = "optimal_soil_hum_max";
     private static final String KEY_OPTIMAL_TEMP_MIN = "optimal_temp_min";
@@ -96,6 +97,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + KEY_SCIENTIFIC_NAME + " TEXT,"
             + KEY_IMAGE_URL + " TEXT,"
             + KEY_IS_CONNECTED + " INTEGER DEFAULT 0,"
+            + KEY_DEVICE_ID + " TEXT,"
             + KEY_OPTIMAL_SOIL_HUM_MIN + " REAL,"
             + KEY_OPTIMAL_SOIL_HUM_MAX + " REAL,"
             + KEY_OPTIMAL_TEMP_MIN + " REAL,"
@@ -153,14 +155,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Eliminar tablas antiguas si existen
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ALERTS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SENSOR_DATA);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PLANTS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
+        Log.d(TAG, "Actualizando base de datos de versión " + oldVersion + " a " + newVersion);
 
-        // Crear tablas nuevas
-        onCreate(db);
+        // Migración de versión 2 a 3: Agregar columna device_id
+        if (oldVersion < 3) {
+            try {
+                db.execSQL("ALTER TABLE " + TABLE_PLANTS + " ADD COLUMN " + KEY_DEVICE_ID + " TEXT");
+                Log.d(TAG, "Columna device_id agregada correctamente a la tabla plants");
+            } catch (Exception e) {
+                Log.e(TAG, "Error al agregar columna device_id: " + e.getMessage());
+            }
+        }
+
+        // Si hay versiones futuras, manejar aquí
+        // if (oldVersion < 4) { ... }
     }
 
     /**
@@ -319,6 +327,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(KEY_SCIENTIFIC_NAME, plant.getScientificName());
         values.put(KEY_IMAGE_URL, plant.getImageUrl());
         values.put(KEY_IS_CONNECTED, plant.isConnected() ? 1 : 0);
+        values.put(KEY_DEVICE_ID, plant.getDeviceId());
         values.put(KEY_OPTIMAL_SOIL_HUM_MIN, plant.getOptimalSoilHumidityMin());
         values.put(KEY_OPTIMAL_SOIL_HUM_MAX, plant.getOptimalSoilHumidityMax());
         values.put(KEY_OPTIMAL_TEMP_MIN, plant.getOptimalTempMin());
@@ -593,6 +602,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         plant.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow(KEY_IMAGE_URL)));
         plant.setConnected(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_IS_CONNECTED)) == 1);
 
+        // Device ID
+        try { plant.setDeviceId(cursor.getString(cursor.getColumnIndexOrThrow(KEY_DEVICE_ID))); } catch (Exception ignored) {}
+
         // Campos opcionales — solo si existen en tu modelo
         try { plant.setOptimalSoilHumidityMin(cursor.getFloat(cursor.getColumnIndexOrThrow(KEY_OPTIMAL_SOIL_HUM_MIN))); } catch (Exception ignored) {}
         try { plant.setOptimalSoilHumidityMax(cursor.getFloat(cursor.getColumnIndexOrThrow(KEY_OPTIMAL_SOIL_HUM_MAX))); } catch (Exception ignored) {}
@@ -714,6 +726,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(KEY_SCIENTIFIC_NAME, plant.getScientificName());
         values.put(KEY_IMAGE_URL, plant.getImageUrl());        // null si no cambió
         values.put(KEY_IS_CONNECTED, plant.isConnected() ? 1 : 0);
+        values.put(KEY_DEVICE_ID, plant.getDeviceId());
         values.put(KEY_UPDATED_AT, String.valueOf(System.currentTimeMillis()));
 
         int rows = db.update(

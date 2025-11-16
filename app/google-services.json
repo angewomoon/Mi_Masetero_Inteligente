@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "500446366117",
-    "project_id": "mi-masetero-inteligente",
-    "storage_bucket": "mi-masetero-inteligente.firebasestorage.app"
+    "project_number": "721011693088",
+    "project_id": "mimaseterointeligente",
+    "storage_bucket": "mimaseterointeligente.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:500446366117:android:f3b0c742014a6c4047804c",
+        "mobilesdk_app_id": "1:721011693088:android:ad267b093c163be9424e45",
         "android_client_info": {
           "package_name": "com.devst.mimaseterointeligente"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCVOhEsUkwxQnG9iVV0cOWdxhgFfS0zt08"
+          "current_key": "AIzaSyA8kdbbCJgkOXSsRAomdnqk6yPmRQuqKpU"
         }
       ],
       "services": {

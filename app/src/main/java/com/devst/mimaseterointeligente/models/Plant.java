@@ -11,6 +11,7 @@ public class Plant implements Serializable {
     private String scientificName;
     private String imageUrl;
     private boolean isConnected; // Si está conectada al masetero inteligente
+    private String deviceId;     // ID del dispositivo ESP32 conectado (ej: "ESP32-A1B2C3")
 
     // Parámetros óptimos
     private float optimalSoilHumidityMin;
@@ -190,11 +191,22 @@ public class Plant implements Serializable {
     }
 
     public boolean isConnected() {
-        return isConnected;
+        // Una planta está conectada si tiene un deviceId asignado
+        return deviceId != null && !deviceId.isEmpty();
     }
 
     public void setConnected(boolean connected) {
         isConnected = connected;
+    }
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+        // Actualizar isConnected automáticamente
+        this.isConnected = (deviceId != null && !deviceId.isEmpty());
     }
 
     public float getOptimalSoilHumidityMin() {

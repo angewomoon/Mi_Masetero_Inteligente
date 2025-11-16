@@ -222,6 +222,69 @@
 
         </LinearLayout>
 
+        <!-- Sección de selección de dispositivo (visible solo si switch está activado) -->
+        <LinearLayout
+            android:id="@+id/layoutDeviceSelection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp">
+
+            <!-- Título de sección -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/device_selection_section_title"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Card para mostrar dispositivo seleccionado -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvSelectedDevice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/device_none_selected"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_secondary"
+                        android:layout_marginBottom="8dp" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Botón para seleccionar dispositivo -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSelectDevice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/device_select_button"
+                android:textSize="14sp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                app:strokeColor="@color/primary_green"
+                app:cornerRadius="12dp"
+                app:icon="@android:drawable/ic_menu_search"
+                app:iconTint="@color/primary_green"
+                android:textColor="@color/primary_green" />
+
+        </LinearLayout>
+
         <!-- Botón de guardar -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSavePlant"
