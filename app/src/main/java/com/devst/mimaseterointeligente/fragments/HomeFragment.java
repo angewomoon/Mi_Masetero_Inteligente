@@ -3,6 +3,8 @@ package com.devst.mimaseterointeligente.fragments;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -56,6 +58,9 @@ public class HomeFragment extends Fragment {
     private DatabaseHelper databaseHelper;
     private PlantAdapter plantAdapter;
     private int userId;
+    private com.devst.mimaseterointeligente.utils.SessionManager sessionManager;
+    private Handler refreshHandler;
+    private Runnable refreshRunnable;
 
     @Nullable
     @Override
@@ -77,9 +82,9 @@ public class HomeFragment extends Fragment {
         databaseHelper = new DatabaseHelper(requireContext());
         Log.d(TAG, "onViewCreated: DatabaseHelper inicializado");
 
-        // Obtener userId de SharedPreferences
-        SharedPreferences prefs = requireActivity().getSharedPreferences("MaseteroPrefs", MODE_PRIVATE);
-        userId = prefs.getInt("userId", -1);
+        // Inicializar SessionManager y obtener userId
+        sessionManager = new com.devst.mimaseterointeligente.utils.SessionManager(requireContext());
+        userId = sessionManager.getUserId();
         Log.d(TAG, "onViewCreated: userId obtenido = " + userId);
 
         // Configurar RecyclerView

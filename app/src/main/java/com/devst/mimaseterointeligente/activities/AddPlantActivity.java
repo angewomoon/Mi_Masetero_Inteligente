@@ -15,6 +15,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -402,12 +403,13 @@ public class AddPlantActivity extends AppCompatActivity {
             return;
         }
 
-        // Obtener el ID del usuario actual
-        SharedPreferences prefs = getSharedPreferences("MaseteroPrefs", MODE_PRIVATE);
-        int userId = prefs.getInt("userId", -1);
+        // Obtener el ID del usuario actual usando SessionManager
+        com.devst.mimaseterointeligente.utils.SessionManager sessionManager =
+            new com.devst.mimaseterointeligente.utils.SessionManager(this);
+        int userId = sessionManager.getUserId();
 
         if (userId == -1) {
-            Toast.makeText(this, "Error: Usuario no identificado", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Error: Usuario no identificado. Por favor inicia sesión nuevamente", Toast.LENGTH_SHORT).show();
             return;
         }
 

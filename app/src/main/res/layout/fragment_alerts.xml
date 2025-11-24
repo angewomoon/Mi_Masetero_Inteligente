@@ -34,12 +34,60 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <!-- Lista de alertas -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvAlerts"
+    <!-- Contenedor con FrameLayout para alternar entre lista y estado vacío -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/item_alert" />
+        android:layout_height="match_parent">
+
+        <!-- Lista de alertas -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvAlerts"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:clipToPadding="false"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_alert" />
+
+        <!-- Estado vacío (cuando no hay alertas) -->
+        <LinearLayout
+            android:id="@+id/layoutEmptyState"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone"
+            android:padding="32dp">
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/ic_no_alerts"
+                android:alpha="0.3"
+                android:contentDescription="Sin alertas" />
+
+            <TextView
+                android:id="@+id/tvEmptyMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="No tienes alertas"
+                android:textColor="@color/gray_text"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Todas tus plantas están en perfecto estado"
+                android:textColor="@color/gray_text"
+                android:textSize="14sp"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+    </FrameLayout>
 
 </LinearLayout>

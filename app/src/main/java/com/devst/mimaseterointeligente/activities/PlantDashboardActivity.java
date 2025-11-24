@@ -202,6 +202,7 @@ public class PlantDashboardActivity extends AppCompatActivity {
         // Verificar si la planta está conectada al masetero
         if (!plant.isConnected()) {
             Toast.makeText(this, "Esta planta no está conectada al masetero inteligente", Toast.LENGTH_SHORT).show();
+            displayEmptyOrCachedData();
             return;
         }
 
@@ -229,10 +230,12 @@ public class PlantDashboardActivity extends AppCompatActivity {
                     } else {
                         Log.e(TAG, "Datos de sensores inválidos");
                         Toast.makeText(PlantDashboardActivity.this, "Datos inválidos del sensor", Toast.LENGTH_SHORT).show();
+                        displayEmptyOrCachedData();
                     }
                 } else {
                     Log.e(TAG, "Error en respuesta: " + response.code());
                     Toast.makeText(PlantDashboardActivity.this, "Error al obtener datos", Toast.LENGTH_SHORT).show();
+                    displayEmptyOrCachedData();
                 }
             }
 
@@ -240,10 +243,110 @@ public class PlantDashboardActivity extends AppCompatActivity {
             public void onFailure(Call<ArduinoResponse> call, Throwable t) {
                 Log.e(TAG, "Error de conexión: " + t.getMessage());
                 Toast.makeText(PlantDashboardActivity.this,
-                        "No se pudo conectar al masetero. Verifica la conexión.",
+                        "No se pudo conectar al masetero. Mostrando últimos datos guardados.",
                         Toast.LENGTH_SHORT).show();
+                displayEmptyOrCachedData();
             }
         });
+    }
+
+    /**
+     * Mostrar datos vacíos o últimos datos guardados cuando no hay conexión
+     */
+    private void displayEmptyOrCachedData() {
+        // Intentar cargar últimos datos de la base de datos
+        SensorData lastData = databaseHelper.getLatestSensorData(plantId);
+
+        if (lastData != null) {
+            // Hay datos guardados, mostrarlos
+            Log.d(TAG, "Mostrando últimos datos guardados en DB");
+            displayCachedSensorData(lastData);
+            tvLastUpdate.setText("Última actualización: " + getTimeAgo(lastData.getTimestamp()));
+        } else {
+            // No hay datos guardados, mostrar valores vacíos
+            Log.d(TAG, "No hay datos guardados, mostrando valores vacíos");
+            displayEmptySensorData();
+            tvLastUpdate.setText("Sin datos disponibles");
+        }
+    }
+
+    /**
+     * Mostrar datos guardados de la base de datos
+     */
+    private void displayCachedSensorData(SensorData data) {
+        // Humedad del suelo
+        tvSoilHumidity.setText(String.format(Locale.getDefault(), "%.0f%%", data.getSoilHumidity()));
+        tvSoilHumidityStatus.setText("(Datos guardados)");
+
+        // Temperatura
+        tvTemperature.setText(String.format(Locale.getDefault(), "%.1f°C", data.getTemperature()));
+        tvTemperatureStatus.setText("(Datos guardados)");
+
+        // Humedad ambiental
+        tvAmbientHumidity.setText(String.format(Locale.getDefault(), "%.0f%%", data.getAmbientHumidity()));
+        tvAmbientHumidityStatus.setText("(Datos guardados)");
+
+        // Nivel UV
+        tvUvLevel.setText(String.format(Locale.getDefault(), "%.1f", data.getUvLevel()));
+        tvUvLevelStatus.setText("(Datos guardados)");
+
+        // Nivel de agua
+        tvWaterLevel.setText(String.format(Locale.getDefault(), "%.0f%%", data.getWaterLevel()));
+        tvWaterLevelStatus.setText("(Datos guardados)");
+
+        // Plagas
+        tvPestCount.setText(String.valueOf(data.getPestCount()));
+        tvPestStatus.setText("(Datos guardados)");
+    }
+
+    /**
+     * Mostrar valores vacíos cuando no hay datos
+     */
+    private void displayEmptySensorData() {
+        tvSoilHumidity.setText("--");
+        tvSoilHumidityStatus.setText("Sin datos");
+
+        tvTemperature.setText("--");
+        tvTemperatureStatus.setText("Sin datos");
+
+        tvAmbientHumidity.setText("--");
+        tvAmbientHumidityStatus.setText("Sin datos");
+
+        tvUvLevel.setText("--");
+        tvUvLevelStatus.setText("Sin datos");
+
+        tvWaterLevel.setText("--");
+        tvWaterLevelStatus.setText("Sin datos");
+
+        tvPestCount.setText("--");
+        tvPestStatus.setText("Sin datos");
+    }
+
+    /**
+     * Calcular tiempo transcurrido desde un timestamp
+     */
+    private String getTimeAgo(String timestamp) {
+        try {
+            long time = Long.parseLong(timestamp);
+            long now = System.currentTimeMillis();
+            long diff = now - time;
+
+            long minutes = diff / (60 * 1000);
+            long hours = diff / (60 * 60 * 1000);
+            long days = diff / (24 * 60 * 60 * 1000);
+
+            if (minutes < 1) {
+                return "Ahora";
+            } else if (minutes < 60) {
+                return "Hace " + minutes + " min";
+            } else if (hours < 24) {
+                return "Hace " + hours + "h";
+            } else {
+                return "Hace " + days + " días";
+            }
+        } catch (Exception e) {
+            return "Desconocido";
+        }
     }
 
     /**

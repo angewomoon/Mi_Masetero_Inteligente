@@ -6,7 +6,7 @@
     android:viewportHeight="24">
     
     <path
-        android:fillColor="@color/alert_info"
-        android:pathData="M12,2.69l5.66,5.66C20.06,10.78,20,14.11,20,15c0,4.42-3.58,8-8,8s-8-3.58-8-8c0-0.89-0.06-4.22,2.34-6.65L12,2.69z"/>
+        android:fillColor="@color/alert_warning"
+        android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM13,17h-2v-2h2v2zM13,13h-2L11,7h2v6z"/>
     
 </vector>

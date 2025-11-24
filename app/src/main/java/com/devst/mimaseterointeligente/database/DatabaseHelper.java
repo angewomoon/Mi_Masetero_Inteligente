@@ -280,12 +280,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         User user = null;
         if (cursor != null && cursor.moveToFirst()) {
             user = new User();
-            user.setId(cursor.getInt(cursor.getColumnIndex(KEY_ID)));
-            user.setName(cursor.getString(cursor.getColumnIndex(KEY_NAME)));
-            user.setEmail(cursor.getString(cursor.getColumnIndex(KEY_EMAIL)));
-            user.setPassword(cursor.getString(cursor.getColumnIndex(KEY_PASSWORD)));
-            user.setProfileImage(cursor.getString(cursor.getColumnIndex(KEY_PROFILE_IMAGE)));
-            user.setGoogleId(cursor.getString(cursor.getColumnIndex(KEY_GOOGLE_ID)));
+            user.setId(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_ID)));
+            user.setName(cursor.getString(cursor.getColumnIndexOrThrow(KEY_NAME)));
+            user.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(KEY_EMAIL)));
+            user.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(KEY_PASSWORD)));
+            user.setProfileImage(cursor.getString(cursor.getColumnIndexOrThrow(KEY_PROFILE_IMAGE)));
+            user.setGoogleId(cursor.getString(cursor.getColumnIndexOrThrow(KEY_GOOGLE_ID)));
             cursor.close();
         }
 
@@ -355,14 +355,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 Plant plant = new Plant();
-                plant.setId(cursor.getInt(cursor.getColumnIndex(KEY_ID)));
-                plant.setUserId(cursor.getInt(cursor.getColumnIndex(KEY_USER_ID)));
-                plant.setName(cursor.getString(cursor.getColumnIndex(KEY_PLANT_NAME)));
-                plant.setType(cursor.getString(cursor.getColumnIndex(KEY_TYPE)));
-                plant.setSpecies(cursor.getString(cursor.getColumnIndex(KEY_SPECIES)));
-                plant.setScientificName(cursor.getString(cursor.getColumnIndex(KEY_SCIENTIFIC_NAME)));
-                plant.setImageUrl(cursor.getString(cursor.getColumnIndex(KEY_IMAGE_URL)));
-                plant.setConnected(cursor.getInt(cursor.getColumnIndex(KEY_IS_CONNECTED)) == 1);
+                plant.setId(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_ID)));
+                plant.setUserId(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_USER_ID)));
+                plant.setName(cursor.getString(cursor.getColumnIndexOrThrow(KEY_PLANT_NAME)));
+                plant.setType(cursor.getString(cursor.getColumnIndexOrThrow(KEY_TYPE)));
+                plant.setSpecies(cursor.getString(cursor.getColumnIndexOrThrow(KEY_SPECIES)));
+                plant.setScientificName(cursor.getString(cursor.getColumnIndexOrThrow(KEY_SCIENTIFIC_NAME)));
+                plant.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow(KEY_IMAGE_URL)));
+                plant.setConnected(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_IS_CONNECTED)) == 1);
 
                 plants.add(plant);
             } while (cursor.moveToNext());
@@ -402,14 +402,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Plant plant = null;
         if (cursor != null && cursor.moveToFirst()) {
             plant = new Plant();
-            plant.setId(cursor.getInt(cursor.getColumnIndex(KEY_ID)));
-            plant.setUserId(cursor.getInt(cursor.getColumnIndex(KEY_USER_ID)));
-            plant.setName(cursor.getString(cursor.getColumnIndex(KEY_PLANT_NAME)));
-            plant.setType(cursor.getString(cursor.getColumnIndex(KEY_TYPE)));
-            plant.setSpecies(cursor.getString(cursor.getColumnIndex(KEY_SPECIES)));
-            plant.setScientificName(cursor.getString(cursor.getColumnIndex(KEY_SCIENTIFIC_NAME)));
-            plant.setImageUrl(cursor.getString(cursor.getColumnIndex(KEY_IMAGE_URL)));
-            plant.setConnected(cursor.getInt(cursor.getColumnIndex(KEY_IS_CONNECTED)) == 1);
+            plant.setId(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_ID)));
+            plant.setUserId(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_USER_ID)));
+            plant.setName(cursor.getString(cursor.getColumnIndexOrThrow(KEY_PLANT_NAME)));
+            plant.setType(cursor.getString(cursor.getColumnIndexOrThrow(KEY_TYPE)));
+            plant.setSpecies(cursor.getString(cursor.getColumnIndexOrThrow(KEY_SPECIES)));
+            plant.setScientificName(cursor.getString(cursor.getColumnIndexOrThrow(KEY_SCIENTIFIC_NAME)));
+            plant.setImageUrl(cursor.getString(cursor.getColumnIndexOrThrow(KEY_IMAGE_URL)));
+            plant.setConnected(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_IS_CONNECTED)) == 1);
             cursor.close();
         }
 
@@ -464,15 +464,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SensorData data = null;
         if (cursor != null && cursor.moveToFirst()) {
             data = new SensorData();
-            data.setId(cursor.getInt(cursor.getColumnIndex(KEY_ID)));
-            data.setPlantId(cursor.getInt(cursor.getColumnIndex(KEY_PLANT_ID)));
-            data.setSoilHumidity(cursor.getFloat(cursor.getColumnIndex(KEY_SOIL_HUMIDITY)));
-            data.setTemperature(cursor.getFloat(cursor.getColumnIndex(KEY_TEMPERATURE)));
-            data.setAmbientHumidity(cursor.getFloat(cursor.getColumnIndex(KEY_AMBIENT_HUMIDITY)));
-            data.setUvLevel(cursor.getFloat(cursor.getColumnIndex(KEY_UV_LEVEL)));
-            data.setWaterLevel(cursor.getFloat(cursor.getColumnIndex(KEY_WATER_LEVEL)));
-            data.setPestCount(cursor.getInt(cursor.getColumnIndex(KEY_PEST_COUNT)));
-            data.setTimestamp(cursor.getString(cursor.getColumnIndex(KEY_TIMESTAMP)));
+            data.setId(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_ID)));
+            data.setPlantId(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_PLANT_ID)));
+            data.setSoilHumidity(cursor.getFloat(cursor.getColumnIndexOrThrow(KEY_SOIL_HUMIDITY)));
+            data.setTemperature(cursor.getFloat(cursor.getColumnIndexOrThrow(KEY_TEMPERATURE)));
+            data.setAmbientHumidity(cursor.getFloat(cursor.getColumnIndexOrThrow(KEY_AMBIENT_HUMIDITY)));
+            data.setUvLevel(cursor.getFloat(cursor.getColumnIndexOrThrow(KEY_UV_LEVEL)));
+            data.setWaterLevel(cursor.getFloat(cursor.getColumnIndexOrThrow(KEY_WATER_LEVEL)));
+            data.setPestCount(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_PEST_COUNT)));
+            data.setTimestamp(cursor.getString(cursor.getColumnIndexOrThrow(KEY_TIMESTAMP)));
             cursor.close();
         }
 
@@ -896,67 +896,4 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return json.toString();
     }
 
-    public class SQLiteToFirebaseMigration {
-
-        private DatabaseReference firebaseRef;
-        private SQLiteDatabase sqliteDb;
-
-        public SQLiteToFirebaseMigration(Context context) {
-            // Inicializar Firebase
-            firebaseRef = FirebaseDatabase.getInstance().getReference();
-
-            // Abrir tu base de datos SQLite
-            MiDatabaseHelper dbHelper = new MiDatabaseHelper(context);
-            sqliteDb = dbHelper.getReadableDatabase();
-        }
-
-        // Migrar una tabla específica
-        public void migrarTabla(String nombreTabla, String nodoFirebase) {
-            Cursor cursor = sqliteDb.rawQuery("SELECT * FROM " + nombreTabla, null);
-
-            if (cursor.moveToFirst()) {
-                do {
-                    // Crear un HashMap con los datos
-                    Map<String, Object> datos = new HashMap<>();
-
-                    // Obtener todas las columnas
-                    for (int i = 0; i < cursor.getColumnCount(); i++) {
-                        String columnName = cursor.getColumnName(i);
-                        String value = cursor.getString(i);
-                        datos.put(columnName, value);
-                    }
-
-                    // Subir a Firebase (usar un ID único)
-                    String id = cursor.getString(cursor.getColumnIndex("id"));
-                    firebaseRef.child(nodoFirebase).child(id).setValue(datos)
-                            .addOnSuccessListener(aVoid -> {
-                                Log.d("Migration", "Registro migrado: " + id);
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e("Migration", "Error: " + e.getMessage());
-                            });
-
-                } while (cursor.moveToNext());
-            }
-
-            cursor.close();
-        }
-
-        // Migrar toda la base de datos
-        public void migrarTodasLasTablas() {
-            Cursor cursor = sqliteDb.rawQuery(
-                    "SELECT name FROM sqlite_master WHERE type='table'", null);
-
-            if (cursor.moveToFirst()) {
-                do {
-                    String tableName = cursor.getString(0);
-                    if (!tableName.equals("android_metadata") &&
-                            !tableName.equals("sqlite_sequence")) {
-                        migrarTabla(tableName, tableName);
-                    }
-                } while (cursor.moveToNext());
-            }
-            cursor.close();
-        }
-    }
 }

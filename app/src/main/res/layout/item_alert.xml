@@ -1,68 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginBottom="8dp"
-    app:cardBackgroundColor="#FFF9E6" 
+    android:layout_marginBottom="12dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="2dp">
+    app:cardElevation="2dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
 
+        <!-- Ícono de la alerta -->
         <ImageView
             android:id="@+id/ivAlertIcon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@drawable/alert_icon_background"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:padding="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:src="@drawable/ic_email" 
-            app:tint="@android:color/white" />
+            android:src="@drawable/ic_water_drop"
+            android:background="@drawable/alert_icon_background"
+            android:contentDescription="Icono de alerta" />
 
-        <TextView
-            android:id="@+id/tvAlertTitle"
+        <!-- Contenido de la alerta -->
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="8dp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"
-            app:layout_constraintStart_toEndOf="@id/ivAlertIcon"
-            app:layout_constraintTop_toTopOf="@id/ivAlertIcon"
-            app:layout_constraintEnd_toStartOf="@id/tvAlertTimestamp"
-            tools:text="Humedad Baja" />
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
 
-        <TextView
-            android:id="@+id/tvAlertDescription"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="@android:color/darker_gray"
-            app:layout_constraintStart_toStartOf="@id/tvAlertTitle"
-            app:layout_constraintTop_toBottomOf="@id/tvAlertTitle"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            tools:text="La humedad de tu planta está por debajo del nivel óptimo. Considera regar." />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/tvAlertTimestamp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@android:color/darker_gray"
-            android:textSize="12sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tvAlertTitle"
-            tools:text="Hace 10 m" />
+                <TextView
+                    android:id="@+id/tvAlertTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Humedad Baja"
+                    android:textColor="@color/dark_text"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/tvAlertTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hace 10 min"
+                    android:textColor="@color/gray_text"
+                    android:textSize="12sp" />
 
-</com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvAlertMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="La humedad de tu planta está por debajo del nivel óptimo. Considera regar."
+                android:textColor="@color/gray_text"
+                android:textSize="14sp"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+        </LinearLayout>
+
+        <!-- Indicador de no leído -->
+        <View
+            android:id="@+id/ivUnreadIndicator"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/unread_indicator"
+            android:visibility="visible" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

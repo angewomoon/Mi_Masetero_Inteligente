@@ -51,4 +51,19 @@
     <color name="mi_primary_green_light">#A4E965</color>     <!-- botón -->
     <color name="mi_input_fill">#F7F6E7</color><!-- crema de inputs -->
 
+    <!-- Colores para alertas (usados en AlertsAdapter) -->
+    <color name="alert_critical">#D32F2F</color>
+    <color name="alert_critical_bg">#FFCDD2</color>
+    <color name="alert_warning">#F57C00</color>
+    <color name="alert_warning_bg">#FFE0B2</color>
+    <color name="alert_info">#1976D2</color>
+    <color name="alert_info_bg">#BBDEFB</color>
+
+    <!-- Colores adicionales para layouts -->
+    <color name="light_green_bg">#E8F5E9</color>
+    <color name="dark_green">#2E7D32</color>
+    <color name="green_dark">#1B5E20</color>
+    <color name="dark_text">#212121</color>
+    <color name="gray_text">#757575</color>
+    <color name="light_text">#9E9E9E</color>
 </resources>
