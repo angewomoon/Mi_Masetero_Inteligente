@@ -8,7 +8,7 @@ import android.content.SharedPreferences;
  */
 public class SessionManager {
     
-    private static final String PREF_NAME = "MaseteroSession";
+    private static final String PREF_NAME = "MaseteroPrefs";
     private static final String KEY_IS_LOGGED_IN = "isLoggedIn";
     private static final String KEY_USER_ID = "userId";
     private static final String KEY_USER_EMAIL = "userEmail";
