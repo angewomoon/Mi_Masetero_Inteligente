@@ -417,6 +417,11 @@ public class EditPlantActivity extends AppCompatActivity {
     private void handleDeletePlant() {
         dbHelper.deletePlant(plantId);
         Toast.makeText(this, "Planta eliminada", Toast.LENGTH_SHORT).show();
+
+        // Enviar broadcast para actualizar el conteo de plantas en ProfileFragment
+        Intent broadcastIntent = new Intent("com.devst.mimaseterointeligente.PLANT_DELETED");
+        sendBroadcast(broadcastIntent);
+
         setResult(RESULT_OK);
         finish();
     }

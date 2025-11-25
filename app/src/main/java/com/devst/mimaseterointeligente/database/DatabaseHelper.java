@@ -2,6 +2,7 @@ package com.devst.mimaseterointeligente.database;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -19,6 +20,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "DatabaseHelper";
+    private Context context;
 
     // Información de la base de datos
     private static final String DATABASE_NAME = "MaseteroInteligente.db";
@@ -138,6 +140,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context = context.getApplicationContext();
     }
 
     @Override
@@ -498,6 +501,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         long alertId = db.insert(TABLE_ALERTS, null, values);
         db.close();
+
+        // Enviar broadcast para actualizar el conteo de alertas en ProfileFragment
+        if (alertId > 0 && context != null) {
+            try {
+                Intent broadcastIntent = new Intent("com.devst.mimaseterointeligente.ALERT_CREATED");
+                context.sendBroadcast(broadcastIntent);
+            } catch (Exception e) {
+                Log.e(TAG, "Error enviando broadcast: " + e.getMessage());
+            }
+        }
+
         return alertId;
     }
 
@@ -538,9 +552,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(KEY_IS_READ, 1);
 
-        db.update(TABLE_ALERTS, values, KEY_ID + "=?",
+        int rowsAffected = db.update(TABLE_ALERTS, values, KEY_ID + "=?",
                 new String[]{String.valueOf(alertId)});
         db.close();
+
+        // Enviar broadcast para actualizar el conteo de alertas en ProfileFragment
+        if (rowsAffected > 0 && context != null) {
+            try {
+                Intent broadcastIntent = new Intent("com.devst.mimaseterointeligente.ALERT_READ");
+                context.sendBroadcast(broadcastIntent);
+            } catch (Exception e) {
+                Log.e(TAG, "Error enviando broadcast: " + e.getMessage());
+            }
+        }
     }
 
     // Obtener número de alertas no leídas

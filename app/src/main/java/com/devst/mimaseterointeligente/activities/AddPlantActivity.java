@@ -445,6 +445,10 @@ public class AddPlantActivity extends AppCompatActivity {
         if (plantId > 0) {
             Toast.makeText(this, "Planta guardada exitosamente", Toast.LENGTH_SHORT).show();
 
+            // Enviar broadcast para actualizar el conteo de plantas en ProfileFragment
+            Intent broadcastIntent = new Intent("com.devst.mimaseterointeligente.PLANT_ADDED");
+            sendBroadcast(broadcastIntent);
+
             // Retornar a la actividad anterior
             Intent resultIntent = new Intent();
             resultIntent.putExtra("plant_id", plantId);
