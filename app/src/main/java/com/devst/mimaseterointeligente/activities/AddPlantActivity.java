@@ -403,10 +403,19 @@ public class AddPlantActivity extends AppCompatActivity {
             return;
         }
 
-        // Obtener el ID del usuario actual usando SessionManager
-        com.devst.mimaseterointeligente.utils.SessionManager sessionManager =
-            new com.devst.mimaseterointeligente.utils.SessionManager(this);
-        int userId = sessionManager.getUserId();
+        // Obtener el ID del usuario actual desde MaseteroPrefs (igual que ProfileFragment)
+        SharedPreferences prefs = getSharedPreferences("MaseteroPrefs", MODE_PRIVATE);
+        int userId = prefs.getInt("userId", -1);
+
+        // Si no hay userId en MaseteroPrefs, intentar con SessionManager como fallback
+        if (userId == -1) {
+            com.devst.mimaseterointeligente.utils.SessionManager sessionManager =
+                new com.devst.mimaseterointeligente.utils.SessionManager(this);
+            userId = sessionManager.getUserId();
+            Log.d(TAG, "userId desde SessionManager: " + userId);
+        } else {
+            Log.d(TAG, "userId desde MaseteroPrefs: " + userId);
+        }
 
         if (userId == -1) {
             Toast.makeText(this, "Error: Usuario no identificado. Por favor inicia sesión nuevamente", Toast.LENGTH_SHORT).show();

@@ -8,6 +8,8 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +28,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.devst.mimaseterointeligente.R;
@@ -84,11 +87,7 @@ public class ProfileFragment extends Fragment {
         userId = prefs.getInt("userId", -1);
 
         // Configurar listeners
-        btnCerrarSesion.setOnClickListener(v -> {
-            if (getActivity() instanceof MainActivity) {
-                ((MainActivity) getActivity()).logout();
-            }
-        });
+        btnCerrarSesion.setOnClickListener(v -> showLogoutDialog());
 
         // Listener para abrir la actividad de editar perfil
         btnEditarPerfil.setOnClickListener(v -> {
@@ -114,12 +113,15 @@ public class ProfileFragment extends Fragment {
                         Uri imageUri = result.getData().getData();
                         if (imageUri != null) {
                             try {
-                                // Cargar y comprimir la imagen
+                                // Cargar la imagen
                                 InputStream inputStream = requireContext().getContentResolver().openInputStream(imageUri);
                                 Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
 
+                                // Corregir orientación según EXIF
+                                Bitmap orientedBitmap = fixImageOrientation(imageUri, bitmap);
+
                                 // Comprimir imagen para no ocupar mucho espacio
-                                Bitmap compressedBitmap = compressImage(bitmap);
+                                Bitmap compressedBitmap = compressImage(orientedBitmap);
 
                                 // Convertir a Base64 para guardar en la BD
                                 String base64Image = bitmapToBase64(compressedBitmap);
@@ -228,10 +230,20 @@ public class ProfileFragment extends Fragment {
                 try {
                     Bitmap bitmap = base64ToBitmap(user.getProfileImage());
                     ivProfileAvatar.setImageBitmap(bitmap);
+                    Log.d(TAG, "Foto de perfil cargada correctamente");
                 } catch (Exception e) {
                     Log.e(TAG, "Error al cargar foto de perfil: " + e.getMessage());
+                    // Si hay error, usar imagen por defecto
+                    ivProfileAvatar.setImageResource(R.drawable.ic_email);
                 }
+            } else {
+                // Si no hay foto de perfil, usar imagen por defecto
+                Log.d(TAG, "No hay foto de perfil, usando imagen por defecto");
+                ivProfileAvatar.setImageResource(R.drawable.ic_email);
             }
+        } else {
+            // Si no hay userId, usar imagen por defecto
+            ivProfileAvatar.setImageResource(R.drawable.ic_email);
         }
     }
 
@@ -247,6 +259,48 @@ public class ProfileFragment extends Fragment {
         } else {
             tvPlantsCount.setText("0");
             tvAlertsCount.setText("0");
+        }
+    }
+
+    /**
+     * Corregir la orientación de la imagen según metadatos EXIF
+     */
+    private Bitmap fixImageOrientation(Uri imageUri, Bitmap bitmap) {
+        try {
+            InputStream inputStream = requireContext().getContentResolver().openInputStream(imageUri);
+            ExifInterface exif = new ExifInterface(inputStream);
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+            Matrix matrix = new Matrix();
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    matrix.postRotate(90);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    matrix.postRotate(180);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    matrix.postRotate(270);
+                    break;
+                case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                    matrix.setScale(-1, 1);
+                    break;
+                case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                    matrix.setScale(1, -1);
+                    break;
+                default:
+                    return bitmap;
+            }
+
+            Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            if (rotatedBitmap != bitmap) {
+                bitmap.recycle();
+            }
+            return rotatedBitmap;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error al corregir orientación: " + e.getMessage());
+            return bitmap;
         }
     }
 
@@ -307,10 +361,30 @@ public class ProfileFragment extends Fragment {
                 int result = dbHelper.updateUser(user);
                 if (result > 0) {
                     Log.d(TAG, "Foto de perfil guardada correctamente");
+
+                    // Enviar broadcast para notificar cambios en el perfil
+                    Intent broadcastIntent = new Intent("com.devst.mimaseterointeligente.PROFILE_UPDATED");
+                    requireContext().sendBroadcast(broadcastIntent);
                 } else {
                     Log.e(TAG, "Error al guardar foto de perfil");
                 }
             }
         }
+    }
+
+    /**
+     * Muestra un diálogo de confirmación para cerrar sesión
+     */
+    private void showLogoutDialog() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Cerrar sesión")
+                .setMessage("¿Estás seguro de que deseas cerrar sesión?")
+                .setPositiveButton("Sí", (dialog, which) -> {
+                    if (getActivity() instanceof MainActivity) {
+                        ((MainActivity) getActivity()).logout();
+                    }
+                })
+                .setNegativeButton("No", null)
+                .show();
     }
 }

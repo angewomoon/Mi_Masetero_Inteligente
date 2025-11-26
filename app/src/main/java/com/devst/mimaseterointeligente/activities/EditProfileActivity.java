@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -57,7 +59,6 @@ public class EditProfileActivity extends AppCompatActivity {
 
     // Para manejar la selección de imagen
     private ActivityResultLauncher<Intent> imagePickerLauncher;
-    private String newProfileImageBase64 = null;
     private boolean deleteProfileImage = false; // Flag para eliminar imagen
 
     @Override
@@ -109,15 +110,21 @@ public class EditProfileActivity extends AppCompatActivity {
                         Uri imageUri = result.getData().getData();
                         if (imageUri != null) {
                             try {
-                                // Cargar y comprimir la imagen
+                                // Cargar la imagen
                                 InputStream inputStream = getContentResolver().openInputStream(imageUri);
                                 Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
 
+                                // Corregir orientación según EXIF
+                                Bitmap orientedBitmap = fixImageOrientation(imageUri, bitmap);
+
                                 // Comprimir imagen
-                                Bitmap compressedBitmap = compressImage(bitmap);
+                                Bitmap compressedBitmap = compressImage(orientedBitmap);
 
                                 // Convertir a Base64
-                                newProfileImageBase64 = bitmapToBase64(compressedBitmap);
+                                String base64Image = bitmapToBase64(compressedBitmap);
+
+                                // Guardar INMEDIATAMENTE en la base de datos (igual que ProfileFragment)
+                                saveProfileImage(base64Image);
 
                                 // Mostrar preview
                                 ivProfileImage.setImageBitmap(compressedBitmap);
@@ -125,7 +132,7 @@ public class EditProfileActivity extends AppCompatActivity {
                                 // Resetear flag de eliminar si había uno
                                 deleteProfileImage = false;
 
-                                Toast.makeText(this, "Imagen seleccionada. Guarda los cambios para aplicar.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "Foto de perfil actualizada", Toast.LENGTH_SHORT).show();
 
                             } catch (Exception e) {
                                 Log.e(TAG, "Error al cargar imagen: " + e.getMessage());
@@ -142,24 +149,43 @@ public class EditProfileActivity extends AppCompatActivity {
      */
     private void loadUserData() {
         try {
-            currentUser = dbHelper.getUserByEmail(sessionManager.getUserEmail());
+            // Usar MaseteroPrefs que es donde realmente se guardan los datos (igual que ProfileFragment)
+            SharedPreferences prefs = getSharedPreferences("MaseteroPrefs", Context.MODE_PRIVATE);
+            String email = prefs.getString("userEmail", "");
 
-            if (currentUser != null) {
-                etName.setText(currentUser.getName());
-                etEmail.setText(currentUser.getEmail());
+            Log.d(TAG, "Cargando usuario con email: " + email);
 
-                // Cargar imagen de perfil si existe
-                if (currentUser.getProfileImage() != null && !currentUser.getProfileImage().isEmpty()) {
-                    try {
-                        Bitmap bitmap = base64ToBitmap(currentUser.getProfileImage());
-                        ivProfileImage.setImageBitmap(bitmap);
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error al cargar foto de perfil: " + e.getMessage());
+            if (email.isEmpty()) {
+                // Si no hay email en MaseteroPrefs, intentar con SessionManager
+                email = sessionManager.getUserEmail();
+                Log.d(TAG, "Email desde SessionManager: " + email);
+            }
+
+            if (!email.isEmpty()) {
+                currentUser = dbHelper.getUserByEmail(email);
+
+                if (currentUser != null) {
+                    Log.d(TAG, "Usuario cargado: " + currentUser.getName());
+                    etName.setText(currentUser.getName());
+                    etEmail.setText(currentUser.getEmail());
+
+                    // Cargar imagen de perfil si existe
+                    if (currentUser.getProfileImage() != null && !currentUser.getProfileImage().isEmpty()) {
+                        try {
+                            Bitmap bitmap = base64ToBitmap(currentUser.getProfileImage());
+                            ivProfileImage.setImageBitmap(bitmap);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error al cargar foto de perfil: " + e.getMessage());
+                        }
                     }
+                } else {
+                    Log.e(TAG, "No se encontró usuario con email: " + email);
                 }
+            } else {
+                Log.e(TAG, "No hay email guardado en SharedPreferences");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error al cargar datos del usuario: " + e.getMessage(), e);
             Toast.makeText(this, "Error al cargar datos del usuario", Toast.LENGTH_SHORT).show();
         }
     }
@@ -168,25 +194,33 @@ public class EditProfileActivity extends AppCompatActivity {
      * Guardar cambios de nombre y correo
      */
     private void saveChanges() {
+        if (currentUser == null) {
+            Toast.makeText(this, "Error: Usuario no cargado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String newName = etName.getText().toString().trim();
         String newEmail = etEmail.getText().toString().trim();
 
-        // Validación del nombre (OPCIONAL)
-        // Si el usuario no ingresó nombre, mantener el actual
+        // Validación del nombre
+        // Si el campo está vacío, mantener el actual
         if (TextUtils.isEmpty(newName)) {
             newName = currentUser.getName();
         }
 
-        // Validación del correo (OPCIONAL)
-        // Si el usuario ingresó un correo, validarlo
-        if (!TextUtils.isEmpty(newEmail)) {
+        // Validación del correo
+        // Si el campo está vacío, mantener el actual
+        if (TextUtils.isEmpty(newEmail)) {
+            newEmail = currentUser.getEmail();
+        } else {
+            // Si ingresó un correo, validar formato
             if (!android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
                 etEmail.setError("Correo inválido");
                 etEmail.requestFocus();
                 return;
             }
 
-            // Verificar si el correo ya existe (si cambió)
+            // Verificar si el correo ya existe (solo si cambió)
             if (!newEmail.equals(currentUser.getEmail())) {
                 User existingUser = dbHelper.getUserByEmail(newEmail);
                 if (existingUser != null) {
@@ -195,33 +229,24 @@ public class EditProfileActivity extends AppCompatActivity {
                     return;
                 }
             }
-        } else {
-            // Si está vacío, mantener el correo actual
-            newEmail = currentUser.getEmail();
         }
 
         try {
-            // Actualizar usuario
+            // Actualizar nombre y correo
             currentUser.setName(newName);
             currentUser.setEmail(newEmail);
 
-            // Manejar foto de perfil
+            // Manejar foto de perfil solo si se marcó para eliminar
             if (deleteProfileImage) {
-                // Usuario quiere eliminar la foto
                 currentUser.setProfileImage(null);
-            } else if (newProfileImageBase64 != null) {
-                // Usuario seleccionó una nueva foto
-                currentUser.setProfileImage(newProfileImageBase64);
             }
-            // Si no hay cambios en la foto, mantener la actual
+            // La imagen ya se guarda inmediatamente cuando se selecciona, no aquí
 
             int result = dbHelper.updateUser(currentUser);
 
             if (result > 0) {
                 // Actualizar SessionManager (MaseteroSession)
-                if (!newEmail.equals(sessionManager.getUserEmail())) {
-                    sessionManager.saveUserEmail(newEmail);
-                }
+                sessionManager.saveUserEmail(newEmail);
                 sessionManager.saveUserName(newName);
 
                 // IMPORTANTE: También actualizar MaseteroPrefs para compatibilidad con ProfileFragment
@@ -241,8 +266,8 @@ public class EditProfileActivity extends AppCompatActivity {
                 Toast.makeText(this, "Error al actualizar el perfil", Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Error al actualizar el perfil", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Error al actualizar perfil: " + e.getMessage(), e);
+            Toast.makeText(this, "Error al actualizar el perfil: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -361,6 +386,48 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     /**
+     * Corregir la orientación de la imagen según metadatos EXIF
+     */
+    private Bitmap fixImageOrientation(Uri imageUri, Bitmap bitmap) {
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(imageUri);
+            ExifInterface exif = new ExifInterface(inputStream);
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+            Matrix matrix = new Matrix();
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    matrix.postRotate(90);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    matrix.postRotate(180);
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    matrix.postRotate(270);
+                    break;
+                case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                    matrix.setScale(-1, 1);
+                    break;
+                case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                    matrix.setScale(1, -1);
+                    break;
+                default:
+                    return bitmap;
+            }
+
+            Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            if (rotatedBitmap != bitmap) {
+                bitmap.recycle();
+            }
+            return rotatedBitmap;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error al corregir orientación: " + e.getMessage());
+            return bitmap;
+        }
+    }
+
+    /**
      * Comprimir imagen para optimizar almacenamiento
      */
     private Bitmap compressImage(Bitmap bitmap) {
@@ -421,12 +488,39 @@ public class EditProfileActivity extends AppCompatActivity {
     private void deleteProfileImageAction() {
         // Marcar flag para eliminar al guardar
         deleteProfileImage = true;
-        newProfileImageBase64 = null;
 
         // Restaurar imagen por defecto
         ivProfileImage.setImageResource(R.drawable.ic_email);
 
         Toast.makeText(this, "Foto marcada para eliminar. Guarda los cambios para aplicar.", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Guarda la foto de perfil en la base de datos inmediatamente (igual que ProfileFragment)
+     */
+    private void saveProfileImage(String base64Image) {
+        // Usar MaseteroPrefs para obtener el email (igual que ProfileFragment)
+        SharedPreferences prefs = getSharedPreferences("MaseteroPrefs", Context.MODE_PRIVATE);
+        String email = prefs.getString("userEmail", "");
+
+        if (!email.isEmpty()) {
+            User user = dbHelper.getUserByEmail(email);
+            if (user != null) {
+                user.setProfileImage(base64Image);
+                int result = dbHelper.updateUser(user);
+                if (result > 0) {
+                    // Actualizar currentUser también
+                    currentUser = user;
+                    Log.d(TAG, "Foto de perfil guardada correctamente");
+
+                    // Enviar broadcast para notificar cambios en el perfil
+                    Intent broadcastIntent = new Intent("com.devst.mimaseterointeligente.PROFILE_UPDATED");
+                    sendBroadcast(broadcastIntent);
+                } else {
+                    Log.e(TAG, "Error al guardar foto de perfil");
+                }
+            }
+        }
     }
 
     /**

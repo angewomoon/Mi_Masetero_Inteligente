@@ -13,6 +13,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -48,13 +49,19 @@ public class EditPlantActivity extends AppCompatActivity {
     private TextInputEditText etPlantName, etSpecies, etScientificName;
     private AutoCompleteTextView actvPlantType;
     private SwitchMaterial switchConnected;
-    private MaterialButton btnSavePlant;
-    
+    private MaterialButton btnSavePlant, btnSelectDevice;
+    private LinearLayout layoutDeviceSelection;
+    private TextView tvSelectedDevice;
+
     private DatabaseHelper dbHelper;
     private Plant currentPlant;
     private int plantId;
     private Uri selectedImageUri;
     private String currentPhotoPath;
+
+    // Variables para dispositivo seleccionado
+    private String selectedDeviceId;
+    private String selectedDeviceName;
     
     // Tipos de plantas predefinidos
     private final String[] plantTypes = {
@@ -65,6 +72,7 @@ public class EditPlantActivity extends AppCompatActivity {
     // Activity Result Launchers
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<Intent> galleryLauncher;
+    private ActivityResultLauncher<Intent> deviceSelectionLauncher;
     private ActivityResultLauncher<String> requestPermissionLauncher;
 
     @Override
@@ -104,7 +112,12 @@ public class EditPlantActivity extends AppCompatActivity {
         actvPlantType = findViewById(R.id.actvPlantType);
         switchConnected = findViewById(R.id.switchConnected);
         btnSavePlant = findViewById(R.id.btnSavePlant);
-        
+
+        // Componentes de selección de dispositivo
+        layoutDeviceSelection = findViewById(R.id.layoutDeviceSelection);
+        tvSelectedDevice = findViewById(R.id.tvSelectedDevice);
+        btnSelectDevice = findViewById(R.id.btnSelectDevice);
+
         dbHelper = new DatabaseHelper(this);
     }
 
@@ -144,17 +157,53 @@ public class EditPlantActivity extends AppCompatActivity {
                 }
             }
         );
+
+        // Launcher para selección de dispositivo
+        deviceSelectionLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    selectedDeviceId = result.getData().getStringExtra(DeviceSelectionActivity.EXTRA_SELECTED_DEVICE_ID);
+                    selectedDeviceName = result.getData().getStringExtra(DeviceSelectionActivity.EXTRA_SELECTED_DEVICE_NAME);
+
+                    if (selectedDeviceName != null) {
+                        tvSelectedDevice.setText("Dispositivo: " + selectedDeviceName);
+                        tvSelectedDevice.setTextColor(getResources().getColor(R.color.primary_green));
+                    }
+                }
+            }
+        );
     }
 
     private void setupListeners() {
         btnBack.setOnClickListener(v -> finish());
         btnDelete.setOnClickListener(v -> showDeleteConfirmationDialog());
-        
+
         // Click para cambiar imagen
         fabChangeImage.setOnClickListener(v -> showImageSourceDialog());
         ivPlantImage.setOnClickListener(v -> showImageSourceDialog());
-        
+
         btnSavePlant.setOnClickListener(v -> handleUpdatePlant());
+
+        // Listener para el switch de conexión
+        switchConnected.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                layoutDeviceSelection.setVisibility(View.VISIBLE);
+            } else {
+                layoutDeviceSelection.setVisibility(View.GONE);
+                // Limpiar selección de dispositivo
+                selectedDeviceId = null;
+                selectedDeviceName = null;
+                tvSelectedDevice.setText(getString(R.string.device_none_selected));
+                tvSelectedDevice.setTextColor(getResources().getColor(R.color.text_secondary));
+            }
+        });
+
+        // Listener para botón de selección de dispositivo
+        btnSelectDevice.setOnClickListener(v -> {
+            Intent intent = new Intent(EditPlantActivity.this, DeviceSelectionActivity.class);
+            deviceSelectionLauncher.launch(intent);
+        });
     }
 
     private void setupPlantTypeDropdown() {
@@ -181,6 +230,15 @@ public class EditPlantActivity extends AppCompatActivity {
         etSpecies.setText(currentPlant.getSpecies());
         etScientificName.setText(currentPlant.getScientificName());
         switchConnected.setChecked(currentPlant.isConnected());
+
+        // Cargar información del dispositivo si está conectado
+        if (currentPlant.isConnected() && currentPlant.getDeviceId() != null && !currentPlant.getDeviceId().isEmpty()) {
+            layoutDeviceSelection.setVisibility(View.VISIBLE);
+            selectedDeviceId = currentPlant.getDeviceId();
+            selectedDeviceName = currentPlant.getDeviceId(); // En el futuro podrías cargar el nombre real del dispositivo
+            tvSelectedDevice.setText("Dispositivo: " + selectedDeviceName);
+            tvSelectedDevice.setTextColor(getResources().getColor(R.color.primary_green));
+        }
 
         // Cargar imagen si existe
         if (currentPlant.getImageUrl() != null && !currentPlant.getImageUrl().isEmpty()) {
@@ -387,6 +445,17 @@ public class EditPlantActivity extends AppCompatActivity {
         currentPlant.setSpecies(species);
         currentPlant.setScientificName(scientificName);
         currentPlant.setConnected(isConnected);
+
+        // Si está conectado, verificar que se haya seleccionado un dispositivo
+        if (isConnected) {
+            if (selectedDeviceId == null || selectedDeviceId.isEmpty()) {
+                Toast.makeText(this, "Por favor selecciona un dispositivo", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            currentPlant.setDeviceId(selectedDeviceId);
+        } else {
+            currentPlant.setDeviceId(null);
+        }
 
         // Actualizar la ruta de la imagen si se cambió
         if (currentPhotoPath != null) {

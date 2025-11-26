@@ -99,12 +99,8 @@
             android:theme="@style/Theme.MaseteroInteligente" />
 
         <activity
-            android:name=".activities.ProfileActivity"
-            android:theme="@style/Theme.MaseteroInteligente" />
-
-        <activity
             android:name=".activities.EditProfileActivity"
-            android:theme="@style/Theme.MaseteroInteligente.NoActionBar" /> <!-- CORREGIDO -->
+            android:theme="@style/Theme.MaseteroInteligente.NoActionBar" />
 
         <activity
             android:name=".activities.MigrationActivity"

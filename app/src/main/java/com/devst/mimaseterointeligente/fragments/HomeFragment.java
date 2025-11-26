@@ -1,7 +1,11 @@
 package com.devst.mimaseterointeligente.fragments;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -62,6 +66,9 @@ public class HomeFragment extends Fragment {
     private Handler refreshHandler;
     private Runnable refreshRunnable;
 
+    // BroadcastReceiver para escuchar cuando se agrega una planta
+    private BroadcastReceiver plantAddedReceiver;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -82,10 +89,21 @@ public class HomeFragment extends Fragment {
         databaseHelper = new DatabaseHelper(requireContext());
         Log.d(TAG, "onViewCreated: DatabaseHelper inicializado");
 
-        // Inicializar SessionManager y obtener userId
-        sessionManager = new com.devst.mimaseterointeligente.utils.SessionManager(requireContext());
-        userId = sessionManager.getUserId();
-        Log.d(TAG, "onViewCreated: userId obtenido = " + userId);
+        // Obtener userId desde MaseteroPrefs (igual que ProfileFragment)
+        SharedPreferences prefs = requireContext().getSharedPreferences("MaseteroPrefs", MODE_PRIVATE);
+        userId = prefs.getInt("userId", -1);
+
+        // Si no hay userId en MaseteroPrefs, intentar con SessionManager como fallback
+        if (userId == -1) {
+            sessionManager = new com.devst.mimaseterointeligente.utils.SessionManager(requireContext());
+            userId = sessionManager.getUserId();
+            Log.d(TAG, "onViewCreated: userId desde SessionManager = " + userId);
+        } else {
+            Log.d(TAG, "onViewCreated: userId desde MaseteroPrefs = " + userId);
+        }
+
+        // Inicializar BroadcastReceiver
+        setupBroadcastReceiver();
 
         // Configurar RecyclerView
         setupRecyclerView();
@@ -104,11 +122,56 @@ public class HomeFragment extends Fragment {
         Log.d(TAG, "onViewCreated: HomeFragment completamente inicializado");
     }
 
+    /**
+     * Configura el BroadcastReceiver para escuchar cuando se agrega una planta
+     */
+    private void setupBroadcastReceiver() {
+        plantAddedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (action != null && "com.devst.mimaseterointeligente.PLANT_ADDED".equals(action)) {
+                    Log.d(TAG, "BroadcastReceiver: Planta agregada, recargando lista");
+                    loadPlants();
+                }
+            }
+        };
+    }
+
     @Override
     public void onResume() {
         super.onResume();
         // Recargar plantas cada vez que el fragmento vuelve a estar visible
         loadPlants();
+
+        // Registrar el BroadcastReceiver para escuchar cuando se agrega una planta
+        if (plantAddedReceiver != null) {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction("com.devst.mimaseterointeligente.PLANT_ADDED");
+            filter.addAction("com.devst.mimaseterointeligente.PLANT_DELETED");
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requireContext().registerReceiver(plantAddedReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                requireContext().registerReceiver(plantAddedReceiver, filter);
+            }
+            Log.d(TAG, "BroadcastReceiver registrado");
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        // Desregistrar el BroadcastReceiver para evitar fugas de memoria
+        if (plantAddedReceiver != null) {
+            try {
+                requireContext().unregisterReceiver(plantAddedReceiver);
+                Log.d(TAG, "BroadcastReceiver desregistrado");
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "Error al desregistrar receiver: " + e.getMessage());
+            }
+        }
     }
 
     /**
