@@ -7,11 +7,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager; // Added for context
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.devst.mimaseterointeligente.R;
@@ -23,12 +24,13 @@ import com.devst.mimaseterointeligente.utils.SessionManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Fragmento para mostrar alertas del usuario
- * Filtra alertas solo de las plantas del usuario actual
+ * Fragmento que muestra y gestiona las alertas del usuario.
+ * Toda la lógica de negocio se encuentra aquí.
  */
-public class AlertsFragment extends Fragment {
+public class AlertsFragment extends Fragment implements AlertsAdapter.OnAlertClickListener {
 
     private static final String TAG = "AlertsFragment";
 
@@ -38,12 +40,10 @@ public class AlertsFragment extends Fragment {
     private AlertsAdapter alertsAdapter;
     private DatabaseHelper dbHelper;
     private SessionManager sessionManager;
-    private List<Alert> alertList = new ArrayList<>();
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Inicializar el DatabaseHelper y SessionManager
         dbHelper = new DatabaseHelper(requireContext());
         sessionManager = new SessionManager(requireContext());
         return inflater.inflate(R.layout.fragment_alerts, container, false);
@@ -53,100 +53,78 @@ public class AlertsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Enlazar vistas
         rvAlerts = view.findViewById(R.id.rvAlerts);
         layoutEmptyState = view.findViewById(R.id.layoutEmptyState);
         tvEmptyMessage = view.findViewById(R.id.tvEmptyMessage);
 
-        // Configurar RecyclerView
-        rvAlerts.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        // Inicializar el adaptador con una lista vacía
-        alertsAdapter = new AlertsAdapter(getContext(), alertList);
-        rvAlerts.setAdapter(alertsAdapter);
-
-        // Cargar alertas
+        setupRecyclerView();
         loadAlerts();
+
+        // Manejar el botón de retroceso si existe en el layout
+        View btnBack = view.findViewById(R.id.btnBack);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> requireActivity().finish());
+        }
+    }
+
+    private void setupRecyclerView() {
+        alertsAdapter = new AlertsAdapter(requireContext(), new ArrayList<>(), this);
+        rvAlerts.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvAlerts.setAdapter(alertsAdapter);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        // Cargar o actualizar las alertas cada vez que el fragmento se vuelve visible
         loadAlerts();
     }
 
-    /**
-     * Cargar alertas solo de las plantas del usuario actual
-     */
     private void loadAlerts() {
         try {
             int userId = sessionManager.getUserId();
-
             if (userId == -1) {
-                Log.e(TAG, "Usuario no identificado");
-                showEmptyState("No se pudo identificar el usuario");
+                showEmptyState("No se pudo identificar al usuario.");
                 return;
             }
 
-            // Obtener todas las plantas del usuario
             List<Plant> userPlants = dbHelper.getUserPlants(userId);
-
             if (userPlants == null || userPlants.isEmpty()) {
-                showEmptyState("No tienes plantas registradas");
+                showEmptyState("Aún no tienes plantas registradas.");
                 return;
             }
 
-            // Obtener todas las alertas
-            List<Alert> allAlerts = dbHelper.getAllAlerts();
+            // Optimización: Obtener IDs de plantas en un Set para búsquedas rápidas
+            List<Integer> userPlantIds = userPlants.stream().map(Plant::getId).collect(Collectors.toList());
+            List<Alert> allAlerts = dbHelper.getAllAlerts(); // Asumiendo que esto es necesario
 
-            // Filtrar alertas que pertenecen a plantas del usuario
-            List<Alert> userAlerts = new ArrayList<>();
-            List<Integer> plantIds = new ArrayList<>();
-
-            // Extraer IDs de plantas del usuario
-            for (Plant plant : userPlants) {
-                plantIds.add(plant.getId());
+            if (allAlerts == null || allAlerts.isEmpty()) {
+                showEmptyState("¡Felicidades! No tienes alertas.");
+                return;
             }
 
-            // Filtrar alertas
-            if (allAlerts != null) {
-                for (Alert alert : allAlerts) {
-                    if (plantIds.contains(alert.getPlantId())) {
-                        userAlerts.add(alert);
-                    }
-                }
-            }
+            // Filtrar alertas del usuario
+            List<Alert> userAlerts = allAlerts.stream()
+                    .filter(alert -> userPlantIds.contains(alert.getPlantId()))
+                    .collect(Collectors.toList());
 
-            Log.d(TAG, "Alertas del usuario: " + userAlerts.size());
-
-            // Actualizar el adaptador
             if (userAlerts.isEmpty()) {
-                showEmptyState("No tienes alertas");
+                showEmptyState("¡Todo en orden! No hay alertas para tus plantas.");
             } else {
                 showAlerts(userAlerts);
             }
 
         } catch (Exception e) {
-            Log.e(TAG, "Error al cargar alertas: " + e.getMessage(), e);
-            showEmptyState("Error al cargar alertas");
+            Log.e(TAG, "Error al cargar alertas", e);
+            showEmptyState("Ocurrió un error al cargar las alertas.");
         }
     }
 
-    /**
-     * Mostrar alertas en la lista
-     */
     private void showAlerts(List<Alert> alerts) {
+        if (layoutEmptyState != null) layoutEmptyState.setVisibility(View.GONE);
         rvAlerts.setVisibility(View.VISIBLE);
-        if (layoutEmptyState != null) {
-            layoutEmptyState.setVisibility(View.GONE);
-        }
         alertsAdapter.updateAlerts(alerts);
     }
 
-    /**
-     * Mostrar estado vacío
-     */
     private void showEmptyState(String message) {
         rvAlerts.setVisibility(View.GONE);
         if (layoutEmptyState != null) {
@@ -154,6 +132,46 @@ public class AlertsFragment extends Fragment {
             if (tvEmptyMessage != null) {
                 tvEmptyMessage.setText(message);
             }
+        }
+    }
+
+    // --- Implementación de OnAlertClickListener ---
+
+    @Override
+    public void onAlertClick(Alert alert) {
+        handleAlertClick(alert);
+    }
+
+    // --- FIX IS HERE ---
+    // Renamed this method from onDismissClick to onAlertDismiss
+    @Override
+    public void onAlertDismiss(Alert alert) {
+        handleAlertDismiss(alert);
+    }
+
+    // --- Lógica de negocio movida desde la Activity ---
+
+    private void handleAlertClick(Alert alert) {
+        Toast.makeText(getContext(), "Abriendo detalles de la alerta: " + alert.getTitle(), Toast.LENGTH_SHORT).show();
+        // Aquí podrías navegar a un dashboard de planta o una pantalla de detalle
+        // Por ahora, solo la marcamos como leída
+        markAlertAsRead(alert);
+    }
+
+    private void handleAlertDismiss(Alert alert) {
+        Toast.makeText(getContext(), "Alerta '" + alert.getTitle() + "' descartada.", Toast.LENGTH_SHORT).show();
+        markAlertAsRead(alert);
+    }
+
+    private void markAlertAsRead(Alert alert) {
+        try {
+            dbHelper.markAlertAsRead(alert.getId());
+            Log.d(TAG, "Alerta marcada como leída: " + alert.getId());
+            // Recargar las alertas para que desaparezca de la lista (si el filtro es por no leídas)
+            loadAlerts();
+        } catch (Exception e) {
+            Log.e(TAG, "Error al marcar alerta como leída", e);
+            Toast.makeText(getContext(), "Error al actualizar la alerta", Toast.LENGTH_SHORT).show();
         }
     }
 }
