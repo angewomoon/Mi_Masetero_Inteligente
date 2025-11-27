@@ -11,7 +11,9 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -19,12 +21,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.devst.mimaseterointeligente.R;
 import com.devst.mimaseterointeligente.database.DatabaseHelper;
@@ -48,10 +52,12 @@ public class EditProfileActivity extends AppCompatActivity {
     private EditText etEmail;
     private EditText etCurrentPassword;
     private EditText etNewPassword;
+    private EditText etConfirmNewPassword;
     private Button btnSaveChanges;
     private Button btnChangePassword;
     private Button btnDeleteAccount;
     private ImageView btnBack;
+    private TextView tvReqLength, tvReqUppercase, tvReqNumber;
 
     private DatabaseHelper dbHelper;
     private SessionManager sessionManager;
@@ -60,6 +66,11 @@ public class EditProfileActivity extends AppCompatActivity {
     // Para manejar la selección de imagen
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private boolean deleteProfileImage = false; // Flag para eliminar imagen
+
+    // Requisitos de contraseña
+    private boolean hasMinLength = false;
+    private boolean hasUppercase = false;
+    private boolean hasNumber = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,10 +91,14 @@ public class EditProfileActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.etEmail);
         etCurrentPassword = findViewById(R.id.etCurrentPassword);
         etNewPassword = findViewById(R.id.etNewPassword);
+        etConfirmNewPassword = findViewById(R.id.etConfirmNewPassword);
         btnSaveChanges = findViewById(R.id.btnSaveChanges);
         btnChangePassword = findViewById(R.id.btnChangePassword);
         btnDeleteAccount = findViewById(R.id.btnDeleteAccount);
         btnBack = findViewById(R.id.btnBack);
+        tvReqLength = findViewById(R.id.tvReqLength);
+        tvReqUppercase = findViewById(R.id.tvReqUppercase);
+        tvReqNumber = findViewById(R.id.tvReqNumber);
 
         dbHelper = new DatabaseHelper(this);
         sessionManager = new SessionManager(this);
@@ -97,6 +112,47 @@ public class EditProfileActivity extends AppCompatActivity {
         btnDeleteAccount.setOnClickListener(v -> showDeleteAccountDialog());
         btnBack.setOnClickListener(v -> finish());
         layoutProfileImage.setOnClickListener(v -> showImageSourceDialog());
+
+        // Validación en tiempo real de la nueva contraseña
+        etNewPassword.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                validatePasswordRequirements(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void validatePasswordRequirements(String password) {
+        // Validar longitud mínima
+        hasMinLength = password.length() >= 8;
+        updateRequirementView(tvReqLength, hasMinLength);
+
+        // Validar letra mayúscula
+        hasUppercase = password.matches(".*[A-Z].*");
+        updateRequirementView(tvReqUppercase, hasUppercase);
+
+        // Validar número
+        hasNumber = password.matches(".*\\d.*");
+        updateRequirementView(tvReqNumber, hasNumber);
+    }
+
+    private void updateRequirementView(TextView textView, boolean isMet) {
+        if (isMet) {
+            textView.setTextColor(ContextCompat.getColor(this, R.color.success_green));
+            textView.setText("✓ " + textView.getText().toString().replace("• ", ""));
+        } else {
+            textView.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+            String text = textView.getText().toString();
+            if (!text.startsWith("•")) {
+                textView.setText("• " + text.replace("✓ ", ""));
+            }
+        }
     }
 
     /**
@@ -277,6 +333,7 @@ public class EditProfileActivity extends AppCompatActivity {
     private void changePassword() {
         String currentPassword = etCurrentPassword.getText().toString().trim();
         String newPassword = etNewPassword.getText().toString().trim();
+        String confirmNewPassword = etConfirmNewPassword.getText().toString().trim();
 
         // Validaciones
         if (TextUtils.isEmpty(currentPassword)) {
@@ -291,9 +348,23 @@ public class EditProfileActivity extends AppCompatActivity {
             return;
         }
 
-        if (newPassword.length() < 6) {
-            etNewPassword.setError("La contraseña debe tener al menos 6 caracteres");
+        // Validar requisitos de contraseña
+        if (!hasMinLength || !hasUppercase || !hasNumber) {
+            etNewPassword.setError("La contraseña no cumple con todos los requisitos");
             etNewPassword.requestFocus();
+            return;
+        }
+
+        if (TextUtils.isEmpty(confirmNewPassword)) {
+            etConfirmNewPassword.setError("Confirma tu nueva contraseña");
+            etConfirmNewPassword.requestFocus();
+            return;
+        }
+
+        // Validar que las contraseñas coincidan
+        if (!newPassword.equals(confirmNewPassword)) {
+            etConfirmNewPassword.setError("Las contraseñas no coinciden");
+            etConfirmNewPassword.requestFocus();
             return;
         }
 
@@ -320,6 +391,7 @@ public class EditProfileActivity extends AppCompatActivity {
                 // Limpiar campos
                 etCurrentPassword.setText("");
                 etNewPassword.setText("");
+                etConfirmNewPassword.setText("");
             } else {
                 Toast.makeText(this, "Error al actualizar la contraseña", Toast.LENGTH_SHORT).show();
             }

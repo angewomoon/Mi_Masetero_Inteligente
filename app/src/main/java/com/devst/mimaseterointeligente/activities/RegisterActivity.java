@@ -3,16 +3,20 @@ package com.devst.mimaseterointeligente.activities;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.devst.mimaseterointeligente.R;
 import com.devst.mimaseterointeligente.database.DatabaseHelper;
@@ -28,9 +32,15 @@ public class RegisterActivity extends AppCompatActivity {
     private Button registerButton;
     private ImageButton backButton;
     private ProgressBar progressBar;
+    private TextView tvReqLength, tvReqUppercase, tvReqNumber;
 
     private DatabaseHelper databaseHelper;
     private SharedPreferences sharedPreferences;
+
+    // Requisitos de contraseña
+    private boolean hasMinLength = false;
+    private boolean hasUppercase = false;
+    private boolean hasNumber = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +66,9 @@ public class RegisterActivity extends AppCompatActivity {
         registerButton = findViewById(R.id.registerButton);
         backButton = findViewById(R.id.backButton);
         progressBar = findViewById(R.id.progressBar);
+        tvReqLength = findViewById(R.id.tvReqLength);
+        tvReqUppercase = findViewById(R.id.tvReqUppercase);
+        tvReqNumber = findViewById(R.id.tvReqNumber);
 
         // Ocultar progress bar inicialmente
         progressBar.setVisibility(View.GONE);
@@ -77,6 +90,47 @@ public class RegisterActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        // Validación en tiempo real de la contraseña
+        passwordEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                validatePasswordRequirements(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void validatePasswordRequirements(String password) {
+        // Validar longitud mínima
+        hasMinLength = password.length() >= 8;
+        updateRequirementView(tvReqLength, hasMinLength);
+
+        // Validar letra mayúscula
+        hasUppercase = password.matches(".*[A-Z].*");
+        updateRequirementView(tvReqUppercase, hasUppercase);
+
+        // Validar número
+        hasNumber = password.matches(".*\\d.*");
+        updateRequirementView(tvReqNumber, hasNumber);
+    }
+
+    private void updateRequirementView(TextView textView, boolean isMet) {
+        if (isMet) {
+            textView.setTextColor(ContextCompat.getColor(this, R.color.success_green));
+            textView.setText("✓ " + textView.getText().toString().replace("• ", ""));
+        } else {
+            textView.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+            String text = textView.getText().toString();
+            if (!text.startsWith("•")) {
+                textView.setText("• " + text.replace("✓ ", ""));
+            }
+        }
     }
 
     private void attemptRegister() {
@@ -157,12 +211,12 @@ public class RegisterActivity extends AppCompatActivity {
             emailEditText.setError(null);
         }
 
-        // Validar contraseña
+        // Validar contraseña con los requisitos completos
         if (TextUtils.isEmpty(password)) {
             passwordEditText.setError("La contraseña es requerida");
             valid = false;
-        } else if (password.length() < 6) {
-            passwordEditText.setError("La contraseña debe tener al menos 6 caracteres");
+        } else if (!hasMinLength || !hasUppercase || !hasNumber) {
+            passwordEditText.setError("La contraseña no cumple con todos los requisitos");
             valid = false;
         } else {
             passwordEditText.setError(null);

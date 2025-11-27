@@ -3,8 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
-    android:fillViewport="true">
+    android:background="@color/background_light"
+    android:fillViewport="true"
+    android:fitsSystemWindows="true">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -15,17 +16,17 @@
             android:id="@+id/layoutHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#C8E6C9"
             android:orientation="horizontal"
-            android:padding="16dp"
+            android:padding="20dp"
             android:gravity="center_vertical">
 
             <ImageView
                 android:id="@+id/btnBack"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_back"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_arrow_back"
                 android:contentDescription="Volver"
+                android:tint="@color/primary_green"
                 android:layout_marginEnd="16dp"/>
 
             <TextView
@@ -33,8 +34,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Editar Perfil"
-                android:textColor="@android:color/black"
-                android:textSize="20sp"
+                android:textColor="@color/text_primary"
+                android:textSize="24sp"
                 android:textStyle="bold" />
 
         </LinearLayout>
@@ -72,7 +73,7 @@
                         android:contentDescription="Foto de perfil"
                         app:shapeAppearanceOverlay="@style/CircleImageView"
                         app:strokeWidth="3dp"
-                        app:strokeColor="#C8E6C9" />
+                        app:strokeColor="@color/primary_green" />
 
                     <!-- Overlay semi-transparente -->
                     <View
@@ -96,7 +97,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="Toca para cambiar foto"
-                    android:textColor="@android:color/darker_gray"
+                    android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
 
             </LinearLayout>
@@ -107,7 +108,7 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
-                app:cardBackgroundColor="#FFF9C4"
+                app:cardBackgroundColor="@color/green_light"
                 android:layout_marginBottom="16dp">
 
                 <LinearLayout
@@ -120,7 +121,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Nombre (Opcional)"
-                        android:textColor="@android:color/black"
+                        android:textColor="@color/text_primary"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:layout_marginBottom="8dp" />
@@ -140,7 +141,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Correo Electrónico (Opcional)"
-                        android:textColor="@android:color/black"
+                        android:textColor="@color/text_primary"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:layout_marginBottom="8dp" />
@@ -165,60 +166,139 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:text="Guardar Cambios"
-                android:textColor="@android:color/black"
-                android:backgroundTint="#C8E6C9"
+                android:backgroundTint="@color/primary_green"
+                app:cornerRadius="12dp"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="16dp" />
 
-            <!-- Card de cambio de contraseña -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- Sección de cambio de contraseña -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cambiar Contraseña"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Campo de contraseña actual -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilCurrentPassword"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="#FFF9C4"
+                android:hint="Contraseña actual"
+                app:startIconDrawable="@drawable/ic_lock"
+                app:startIconTint="@color/primary_green"
+                app:endIconMode="password_toggle"
+                app:endIconTint="@color/primary_green"
+                app:boxStrokeColor="@color/primary_green"
+                app:hintTextColor="@color/primary_green"
                 android:layout_marginBottom="16dp">
 
-                <LinearLayout
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etCurrentPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
+                    android:inputType="textPassword"
+                    android:textColor="@color/text_primary" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Cambiar Contraseña"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="12dp" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-                    <EditText
-                        android:id="@+id/etCurrentPassword"
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:hint="Contraseña actual"
-                        android:inputType="textPassword"
-                        android:background="@drawable/edit_text_background"
-                        android:padding="12dp"
-                        android:textSize="16sp"
-                        android:layout_marginBottom="12dp" />
+            <!-- Campo de nueva contraseña -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilNewPassword"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Nueva contraseña"
+                app:startIconDrawable="@drawable/ic_lock"
+                app:startIconTint="@color/primary_green"
+                app:endIconMode="password_toggle"
+                app:endIconTint="@color/primary_green"
+                app:boxStrokeColor="@color/primary_green"
+                app:hintTextColor="@color/primary_green"
+                android:layout_marginBottom="16dp">
 
-                    <EditText
-                        android:id="@+id/etNewPassword"
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:hint="Nueva contraseña (mínimo 6 caracteres)"
-                        android:inputType="textPassword"
-                        android:background="@drawable/edit_text_background"
-                        android:padding="12dp"
-                        android:textSize="16sp" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etNewPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPassword"
+                    android:textColor="@color/text_primary" />
 
-                </LinearLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
-            </com.google.android.material.card.MaterialCardView>
+            <!-- Campo de confirmar nueva contraseña -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilConfirmNewPassword"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Confirmar nueva contraseña"
+                app:startIconDrawable="@drawable/ic_lock"
+                app:startIconTint="@color/primary_green"
+                app:endIconMode="password_toggle"
+                app:endIconTint="@color/primary_green"
+                app:boxStrokeColor="@color/primary_green"
+                app:hintTextColor="@color/primary_green"
+                android:layout_marginBottom="24dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etConfirmNewPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textPassword"
+                    android:textColor="@color/text_primary" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Requisitos de contraseña -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_rounded_light"
+                android:padding="16dp"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="La contraseña debe contener:"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tvReqLength"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="• Mínimo 8 caracteres"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/tvReqUppercase"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="• Al menos una letra mayúscula"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/tvReqNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="• Al menos un número"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary" />
+
+            </LinearLayout>
 
             <!-- Botón cambiar contraseña -->
             <com.google.android.material.button.MaterialButton
@@ -227,10 +307,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:text="Cambiar Contraseña"
-                android:textColor="@android:color/black"
-                app:strokeColor="#C8E6C9"
-                app:strokeWidth="2dp"
+                android:textColor="@color/primary_green"
+                app:strokeColor="@color/primary_green"
+                app:cornerRadius="12dp"
                 android:textSize="16sp"
+                android:textStyle="bold"
                 android:layout_marginBottom="24dp" />
 
             <!-- Botón eliminar usuario -->
@@ -240,10 +321,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:text="Eliminar Usuario"
-                android:textColor="#D32F2F"
-                app:strokeColor="#D32F2F"
-                app:strokeWidth="2dp"
-                android:textSize="16sp" />
+                android:textColor="@color/alert_red"
+                app:strokeColor="@color/alert_red"
+                app:cornerRadius="12dp"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
         </LinearLayout>
 

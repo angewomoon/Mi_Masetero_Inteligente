@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFFFFF"
+    android:background="@color/background_light"
+    android:fitsSystemWindows="true"
     tools:context=".fragments.AlertsFragment">
 
     <!-- Barra de título superior -->
@@ -13,12 +14,11 @@
         android:id="@+id/tvAlertsTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#C8E6C9"
-        android:padding="16dp"
+        android:padding="20dp"
         android:text="Alertas"
         android:textAlignment="center"
-        android:textColor="@android:color/black"
-        android:textSize="20sp"
+        android:textColor="@color/text_primary"
+        android:textSize="28sp"
         android:textStyle="bold" />
 
     <!-- Subtítulo -->
@@ -27,10 +27,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp"
         android:text="Centro de alertas"
-        android:textColor="#388E3C"
+        android:textColor="@color/primary_green"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -72,7 +72,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="No tienes alertas"
-                android:textColor="@color/gray_text"
+                android:textColor="@color/text_secondary"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:gravity="center" />
@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Todas tus plantas están en perfecto estado"
-                android:textColor="@color/gray_text"
+                android:textColor="@color/text_disabled"
                 android:textSize="14sp"
                 android:gravity="center" />
 

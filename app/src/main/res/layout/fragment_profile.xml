@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="@color/background_light"
+    android:fitsSystemWindows="true"
     tools:context=".fragments.ProfileFragment">
 
     <LinearLayout
@@ -17,19 +18,18 @@
             android:id="@+id/tvProfileTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#C8E6C9"
-            android:padding="16dp"
+            android:padding="20dp"
             android:text="Perfil"
             android:textAlignment="center"
-            android:textColor="@android:color/black"
-            android:textSize="20sp"
+            android:textColor="@color/text_primary"
+            android:textSize="28sp"
             android:textStyle="bold" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="24dp"
-            app:cardBackgroundColor="#FFF9C4"
+            app:cardBackgroundColor="@color/green_light"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp">
 
@@ -49,7 +49,7 @@
                     android:foreground="?attr/selectableItemBackgroundBorderless"
                     app:shapeAppearanceOverlay="@style/CircleImageView"
                     app:strokeWidth="2dp"
-                    app:strokeColor="@android:color/darker_gray"
+                    app:strokeColor="@color/primary_green"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
@@ -71,7 +71,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="Usuario"
-                    android:textColor="@android:color/black"
+                    android:textColor="@color/text_primary"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     app:layout_constraintTop_toBottomOf="@+id/ivProfileAvatar"
@@ -83,7 +83,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="usuario@gmail.com"
-                    android:textColor="@android:color/darker_gray"
+                    android:textColor="@color/text_secondary"
                     android:textSize="14sp"
                     app:layout_constraintTop_toBottomOf="@+id/tvUsername"
                     app:layout_constraintStart_toStartOf="parent"
@@ -97,7 +97,7 @@
                     android:layout_marginTop="16dp"
                     android:gravity="center"
                     android:text="Plantas"
-                    android:textColor="#388E3C"
+                    android:textColor="@color/primary_green"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/guideline"
                     app:layout_constraintStart_toStartOf="parent"
@@ -109,7 +109,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="2"
-                    android:textColor="@android:color/black"
+                    android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/guideline"
@@ -130,7 +130,7 @@
                     android:layout_marginTop="16dp"
                     android:gravity="center"
                     android:text="Alertas"
-                    android:textColor="#D32F2F"
+                    android:textColor="@color/alert_red"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/guideline"
@@ -142,7 +142,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="5"
-                    android:textColor="@android:color/black"
+                    android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -156,24 +156,30 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCerrarSesion"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:layout_marginStart="48dp"
             android:layout_marginEnd="48dp"
             android:layout_marginTop="16dp"
             android:text="Cerrar sesión"
-            android:backgroundTint="#C8E6C9" 
-            android:textColor="@android:color/black"/>
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:backgroundTint="@color/primary_green"
+            app:cornerRadius="12dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEditarPerfil"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:layout_marginStart="48dp"
             android:layout_marginEnd="48dp"
-            android:backgroundTint="#E8F5E9"
+            android:layout_marginTop="8dp"
             android:text="Editar perfil"
-            android:textColor="@android:color/black" />
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:strokeColor="@color/primary_green"
+            app:cornerRadius="12dp"
+            android:textColor="@color/primary_green" />
 
     </LinearLayout>
 </ScrollView>
